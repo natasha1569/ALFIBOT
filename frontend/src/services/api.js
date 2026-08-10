@@ -73,6 +73,14 @@ export function login(credentials) {
   });
 }
 
+export function registerUser(registration) {
+  return request('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: '' },
+    body: JSON.stringify(registration),
+  });
+}
+
 export function fetchCurrentUser() {
   return request('/api/auth/me');
 }

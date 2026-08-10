@@ -7,14 +7,16 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test:openai": "node test-openai.js"
+    "test:openai": "node test-openai.js",
+    "test:auth": "node test-auth.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "openai": "^4.104.0",
-    "pg": "^8.22.0"
+    "pg": "^8.22.0",
+    "bcryptjs": "^2.4.3"
   },
   "engines": {
     "node": ">=20.0.0"
