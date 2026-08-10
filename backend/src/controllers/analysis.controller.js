@@ -136,9 +136,14 @@ export async function analyzeContent(req, res) {
 
     await client.query('BEGIN');
 
-    // Por ahora se utiliza el usuario 1 creado en el script SQL.
-    // Más adelante puede reemplazarse por req.user.usuario_id.
-    const userId = 1;
+    const userId = Number(req.user?.sub);
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+      await client.query('ROLLBACK');
+      return res.status(401).json({
+        error: 'La sesión no contiene un usuario válido.',
+      });
+    }
 
     const analysisResult = await client.query(
       `
@@ -279,8 +284,9 @@ export async function getHistory(req, res) {
         ) AS recommendations
 
       FROM alfi.analisis a
+      WHERE a.usuario_id = $1
       ORDER BY a.fecha_creacion DESC
-    `);
+    `, [Number(req.user.sub)]);
 
     return res.status(200).json(result.rows);
   } catch (error) {
@@ -304,10 +310,14 @@ export async function getHistory(req, res) {
  */
 export async function clearHistory(req, res) {
   try {
-    const result = await pool.query(`
-      DELETE FROM alfi.analisis
-      RETURNING analisis_id
-    `);
+    const result = await pool.query(
+      `
+        DELETE FROM alfi.analisis
+        WHERE usuario_id = $1
+        RETURNING analisis_id
+      `,
+      [Number(req.user.sub)],
+    );
 
     return res.status(200).json({
       message: 'Historial eliminado correctamente.',
