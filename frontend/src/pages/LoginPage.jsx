@@ -10,22 +10,40 @@ const EMPTY_REGISTRATION = {
   confirmPassword: '',
 };
 
-export default function LoginPage({ onLogin }) {
-  const [mode, setMode] = useState('login');
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
+export default function LoginPage({
+  onLogin,
+  onBack,
+  initialMode = 'login',
+}) {
+  const [mode, setMode] = useState(initialMode);
+
+  const [credentials, setCredentials] = useState({
+    email: '',
+    password: '',
+  });
+
   const [registration, setRegistration] = useState(EMPTY_REGISTRATION);
+
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setCredentials((current) => ({ ...current, [name]: value }));
+
+    setCredentials((current) => ({
+      ...current,
+      [name]: value,
+    }));
   }
 
   function handleRegistrationChange(event) {
     const { name, value } = event.target;
-    setRegistration((current) => ({ ...current, [name]: value }));
+
+    setRegistration((current) => ({
+      ...current,
+      [name]: value,
+    }));
   }
 
   function changeMode(nextMode) {
@@ -36,16 +54,21 @@ export default function LoginPage({ onLogin }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+
     setError('');
     setSuccessMessage('');
     setIsLoading(true);
 
     try {
       const session = await login(credentials);
+
       saveAuthSession(session);
+
       onLogin(session.user);
     } catch (requestError) {
-      setError(requestError.message || 'No se pudo iniciar sesión.');
+      setError(
+        requestError.message || 'No se pudo iniciar sesión.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -53,18 +76,30 @@ export default function LoginPage({ onLogin }) {
 
   async function handleRegister(event) {
     event.preventDefault();
+
     setError('');
     setSuccessMessage('');
     setIsLoading(true);
 
     try {
       const result = await registerUser(registration);
-      setCredentials({ email: registration.email.trim().toLowerCase(), password: '' });
+
+      setCredentials({
+        email: registration.email.trim().toLowerCase(),
+        password: '',
+      });
+
       setRegistration(EMPTY_REGISTRATION);
+
       setMode('login');
-      setSuccessMessage(result.message || 'Cuenta creada correctamente.');
+
+      setSuccessMessage(
+        result.message || 'Cuenta creada correctamente.',
+      );
     } catch (requestError) {
-      setError(requestError.message || 'No se pudo crear la cuenta.');
+      setError(
+        requestError.message || 'No se pudo crear la cuenta.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -73,12 +108,33 @@ export default function LoginPage({ onLogin }) {
   return (
     <main className="alfi-login-page">
       <section className="alfi-login-card">
+
+        <button
+          className="alfi-back-home"
+          type="button"
+          onClick={onBack}
+        >
+          <i className="bi bi-arrow-left"></i>
+          Volver al inicio
+        </button>
+
         <div className="alfi-login-visual">
-          <img src="/alfi-robot-mini.png" alt="ALFI BOT" />
+          <img
+            src="/alfi-robot-mini.png"
+            alt="ALFI BOT"
+          />
         </div>
 
-        <p className="section-kicker mb-2">Acceso protegido</p>
-        <h1>{mode === 'login' ? 'Iniciar sesión en ALFI BOT' : 'Crear cuenta en ALFI BOT'}</h1>
+        <p className="section-kicker mb-2">
+          Acceso protegido
+        </p>
+
+        <h1>
+          {mode === 'login'
+            ? 'Iniciar sesión en ALFI BOT'
+            : 'Crear cuenta en ALFI BOT'}
+        </h1>
+
         <p className="alfi-login-copy">
           {mode === 'login'
             ? 'Ingresa con tus credenciales para utilizar el analizador preventivo.'
@@ -86,10 +142,17 @@ export default function LoginPage({ onLogin }) {
         </p>
 
         {mode === 'login' ? (
-          <form onSubmit={handleSubmit} className="alfi-login-form">
-            <label htmlFor="email">Correo electrónico</label>
+          <form
+            onSubmit={handleSubmit}
+            className="alfi-login-form"
+          >
+            <label htmlFor="email">
+              Correo electrónico
+            </label>
+
             <div className="alfi-login-input">
               <i className="bi bi-envelope"></i>
+
               <input
                 id="email"
                 name="email"
@@ -101,9 +164,13 @@ export default function LoginPage({ onLogin }) {
               />
             </div>
 
-            <label htmlFor="password">Contraseña</label>
+            <label htmlFor="password">
+              Contraseña
+            </label>
+
             <div className="alfi-login-input">
               <i className="bi bi-lock"></i>
+
               <input
                 id="password"
                 name="password"
@@ -117,19 +184,31 @@ export default function LoginPage({ onLogin }) {
             </div>
 
             {successMessage && (
-              <div className="alert alert-success py-2" role="status">
+              <div
+                className="alert alert-success py-2"
+                role="status"
+              >
                 {successMessage}
               </div>
             )}
 
             {error && (
-              <div className="alert alert-danger py-2" role="alert">
+              <div
+                className="alert alert-danger py-2"
+                role="alert"
+              >
                 {error}
               </div>
             )}
 
-            <button className="btn btn-alfi btn-lg w-100" type="submit" disabled={isLoading}>
-              {isLoading ? 'Verificando...' : 'Ingresar'}
+            <button
+              className="btn btn-alfi btn-lg w-100"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading
+                ? 'Verificando...'
+                : 'Ingresar'}
             </button>
 
             <button
@@ -143,10 +222,17 @@ export default function LoginPage({ onLogin }) {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleRegister} className="alfi-login-form">
-            <label htmlFor="register-name">Nombre completo</label>
+          <form
+            onSubmit={handleRegister}
+            className="alfi-login-form"
+          >
+            <label htmlFor="register-name">
+              Nombre completo
+            </label>
+
             <div className="alfi-login-input">
               <i className="bi bi-person"></i>
+
               <input
                 id="register-name"
                 name="name"
@@ -160,9 +246,13 @@ export default function LoginPage({ onLogin }) {
               />
             </div>
 
-            <label htmlFor="register-email">Correo electrónico</label>
+            <label htmlFor="register-email">
+              Correo electrónico
+            </label>
+
             <div className="alfi-login-input">
               <i className="bi bi-envelope"></i>
+
               <input
                 id="register-email"
                 name="email"
@@ -175,9 +265,13 @@ export default function LoginPage({ onLogin }) {
               />
             </div>
 
-            <label htmlFor="register-phone">Celular</label>
+            <label htmlFor="register-phone">
+              Celular
+            </label>
+
             <div className="alfi-login-input">
               <i className="bi bi-phone"></i>
+
               <input
                 id="register-phone"
                 name="phone"
@@ -193,9 +287,13 @@ export default function LoginPage({ onLogin }) {
               />
             </div>
 
-            <label htmlFor="register-password">Contraseña</label>
+            <label htmlFor="register-password">
+              Contraseña
+            </label>
+
             <div className="alfi-login-input">
               <i className="bi bi-lock"></i>
+
               <input
                 id="register-password"
                 name="password"
@@ -209,12 +307,17 @@ export default function LoginPage({ onLogin }) {
             </div>
 
             <small className="text-secondary">
-              Mínimo 8 caracteres, con mayúscula, minúscula y número.
+              Mínimo 8 caracteres, con mayúscula,
+              minúscula y número.
             </small>
 
-            <label htmlFor="register-confirm-password">Confirmar contraseña</label>
+            <label htmlFor="register-confirm-password">
+              Confirmar contraseña
+            </label>
+
             <div className="alfi-login-input">
               <i className="bi bi-shield-lock"></i>
+
               <input
                 id="register-confirm-password"
                 name="confirmPassword"
@@ -228,13 +331,22 @@ export default function LoginPage({ onLogin }) {
             </div>
 
             {error && (
-              <div className="alert alert-danger py-2" role="alert">
+              <div
+                className="alert alert-danger py-2"
+                role="alert"
+              >
                 {error}
               </div>
             )}
 
-            <button className="btn btn-alfi btn-lg w-100" type="submit" disabled={isLoading}>
-              {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
+            <button
+              className="btn btn-alfi btn-lg w-100"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading
+                ? 'Creando cuenta...'
+                : 'Crear cuenta'}
             </button>
 
             <button
@@ -250,8 +362,10 @@ export default function LoginPage({ onLogin }) {
         )}
 
         <small className="alfi-login-hint">
-          ALFI BOT protege tus credenciales y nunca almacena contraseñas en texto plano.
+          ALFI BOT protege tus credenciales y nunca
+          almacena contraseñas en texto plano.
         </small>
+
       </section>
     </main>
   );
