@@ -22,3 +22,18 @@ Si la base ya está instalada y se desea conservar el historial, no se debe volv
 `migrations/20260810_afb309_registro_usuarios.sql`
 
 Esa migración agrega el soporte de registro sin eliminar el esquema `alfi`.
+
+
+## Documentación del proyecto
+
+La documentación técnica y funcional de ALFI BOT se mantiene en Confluence.
+
+Incluye:
+- Descripción y problemática.
+- Objetivo y alcance.
+- Arquitectura del sistema.
+- Tecnologías utilizadas.
+- Funcionalidades implementadas.
+- Metodología Scrum.
+- Estado actual del proyecto.
+
