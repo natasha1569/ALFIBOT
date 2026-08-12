@@ -139,21 +139,41 @@ export function buildWhatsappMessage(result) {
   return formatShareSummary(result);
 }
 
-export function openWhatsappWeb(result, targetWindow = null) {
+export function buildWhatsappUrl(result) {
   const message = buildWhatsappMessage(result);
-  const url = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+  return `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+}
+
+export function openWhatsappWeb(
+  result,
+  targetWindow = null,
+  browserWindow = globalThis.window,
+) {
+  const url = buildWhatsappUrl(result);
 
   if (targetWindow && !targetWindow.closed) {
     targetWindow.location.href = url;
-    return;
+    return url;
   }
 
-  window.open(url, '_blank', 'noopener,noreferrer');
+  if (!browserWindow?.open) {
+    throw new Error('El navegador no permite abrir WhatsApp Web.');
+  }
+
+  browserWindow.open(url, '_blank', 'noopener,noreferrer');
+  return url;
 }
 
-export async function copyShareSummary(result) {
+export async function copyShareSummary(
+  result,
+  clipboard = globalThis.navigator?.clipboard,
+) {
+  if (!clipboard?.writeText) {
+    throw new Error('El portapapeles no está disponible en este navegador.');
+  }
+
   const text = formatShareSummary(result);
-  await navigator.clipboard.writeText(text);
+  await clipboard.writeText(text);
   return text;
 }
 
@@ -301,6 +321,19 @@ function sanitizeFilename(value) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
+}
+
+export function buildPdfFilename(
+  riskLevel,
+  date = new Date(),
+) {
+  const normalizedRisk = normalizeRiskLevel(riskLevel);
+  const parsedDate = date instanceof Date ? date : new Date(date);
+  const safeDate = Number.isNaN(parsedDate.getTime())
+    ? new Date().toISOString().slice(0, 10)
+    : parsedDate.toISOString().slice(0, 10);
+
+  return `${sanitizeFilename(`alfi-bot-${normalizedRisk}-${safeDate}`)}.pdf`;
 }
 
 export async function downloadReportPdf(result) {
@@ -469,8 +502,7 @@ export async function downloadReportPdf(result) {
       fontSize: 9.5,
     });
 
-    const fileBase = sanitizeFilename(`alfi-bot-${riskLevel}-${new Date().toISOString().slice(0, 10)}`);
-    doc.save(`${fileBase}.pdf`);
+    doc.save(buildPdfFilename(riskLevel));
     return { mode: 'pdf' };
   } catch (error) {
     openPrintableReport(result);
