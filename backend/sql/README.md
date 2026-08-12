@@ -1,39 +1,34 @@
-# SQL de instalación de ALFI BOT
+# SQL de ALFI BOT
 
-El archivo `alfi_bot_db_final_instalacion_completa.sql` es el script canónico de instalación de la base de datos del proyecto.
+Este directorio concentra scripts SQL versionados del proyecto.
 
-## Uso
+## Estado actual
 
-1. Crear la base `alfi_bot_db_final` en PostgreSQL.
-2. Conectarse a esa base desde pgAdmin con un usuario que tenga privilegio `CREATEROLE`.
-3. Abrir Query Tool.
-4. Ejecutar el archivo completo.
+Los instaladores SQL históricos fueron retirados del repositorio para evitar ejecutar por error scripts obsoletos o destructivos sobre una base existente.
 
-## Importante
+No se debe asumir que existe un instalador completo vigente en este directorio.
 
-El script es reejecutable, pero comienza eliminando y reconstruyendo únicamente el esquema `alfi`. Por lo tanto, volver a ejecutarlo elimina los datos actuales del esquema.
+## Seguridad — AFB-371
 
-La tabla `alfi.usuarios` guarda únicamente hashes bcrypt en `password_hash`. El rol de un usuario registrado se asigna internamente y no proviene del formulario del frontend.
+`AFB-371-seguridad.sql` consolida consultas de verificación y bloques de referencia del Plan de Políticas de Seguridad en Bases de Datos.
 
-## Base existente
+El archivo está diseñado para:
 
-Si la base ya está instalada y se desea conservar el historial, no se debe volver a ejecutar el instalador completo. Ejecutar en su lugar:
+- inspeccionar el estado real de PostgreSQL sin eliminar datos;
+- verificar roles, privilegios, triggers y metadatos de auditoría;
+- dejar señalados los bloques pendientes de AFB-151 y AFB-189;
+- servir como punto único para incorporar los controles definitivos cuando esas tareas se completen.
 
-`migrations/20260810_afb309_registro_usuarios.sql`
+### Importante
 
-Esa migración agrega el soporte de registro sin eliminar el esquema `alfi`.
+Los bloques marcados como `PENDIENTE` no se ejecutan automáticamente. No deben activarse hasta validar la estructura real de la base y completar las tareas Jira correspondientes.
 
+No se almacenan contraseñas ni secretos en SQL versionado.
 
-## Documentación del proyecto
+## Documentación de evidencia
 
-La documentación técnica y funcional de ALFI BOT se mantiene en Confluence.
+La matriz de evidencia relacionada se encuentra en:
 
-Incluye:
-- Descripción y problemática.
-- Objetivo y alcance.
-- Arquitectura del sistema.
-- Tecnologías utilizadas.
-- Funcionalidades implementadas.
-- Metodología Scrum.
-- Estado actual del proyecto.
+`docs/security/AFB-370-evidencias-rbac-auditoria-respaldos.md`
 
+La documentación técnica y funcional general del proyecto se mantiene también en Confluence.
