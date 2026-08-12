@@ -4,6 +4,10 @@ const registration = {
   name: 'Usuario Prueba ALFI',
   email: `prueba.afb309.${suffix}@example.com`,
   phone: '0999999999',
+  province: 'Pichincha',
+  ageRange: '25-34',
+  interests: ['ahorro', 'educacion_financiera'],
+  termsAccepted: true,
   password: 'AlfiTest123',
   confirmPassword: 'AlfiTest123',
 };
@@ -40,6 +44,64 @@ async function run() {
   });
   assertStatus(duplicate.response.status, 409, 'Correo duplicado');
 
+  const emptyFields = await request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...registration,
+      email: '',
+    }),
+  });
+  assertStatus(emptyFields.response.status, 400, 'Campos vacíos');
+
+  const invalidEmail = await request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...registration,
+      email: 'correo-invalido',
+    }),
+  });
+  assertStatus(invalidEmail.response.status, 400, 'Correo inválido');
+
+  const invalidPhone = await request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...registration,
+      email: `telefono.${suffix}@example.com`,
+      phone: '123456',
+    }),
+  });
+  assertStatus(invalidPhone.response.status, 400, 'Celular inválido');
+
+  const invalidProvince = await request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...registration,
+      email: `provincia.${suffix}@example.com`,
+      province: 'Provincia inexistente',
+    }),
+  });
+  assertStatus(invalidProvince.response.status, 400, 'Provincia inválida');
+
+  const noInterests = await request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...registration,
+      email: `intereses.${suffix}@example.com`,
+      interests: [],
+    }),
+  });
+  assertStatus(noInterests.response.status, 400, 'Intereses obligatorios');
+
+  const termsNotAccepted = await request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...registration,
+      email: `terminos.${suffix}@example.com`,
+      termsAccepted: false,
+    }),
+  });
+  assertStatus(termsNotAccepted.response.status, 400, 'Términos obligatorios');
+
   const invalidPassword = await request('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify({
@@ -50,6 +112,16 @@ async function run() {
     }),
   });
   assertStatus(invalidPassword.response.status, 400, 'Contraseña débil');
+
+  const differentPasswords = await request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      ...registration,
+      email: `distintas.${suffix}@example.com`,
+      confirmPassword: 'OtraClave123',
+    }),
+  });
+  assertStatus(differentPasswords.response.status, 400, 'Contraseñas distintas');
 
   const login = await request('/api/auth/login', {
     method: 'POST',
@@ -64,7 +136,9 @@ async function run() {
     throw new Error('El login no devolvió token y usuario válidos.');
   }
 
-  console.log('AFB-309 OK: registro, duplicado, contraseña débil y login validados.');
+  console.log(
+    'AFB-309 OK: registro completo, validaciones, duplicado y login validados.',
+  );
 }
 
 run().catch((error) => {

@@ -21,6 +21,53 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ECUADOR_MOBILE_PATTERN = /^09\d{8}$/;
 const STRONG_PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
+const PROVINCES = new Set([
+  'Azuay',
+  'Bolívar',
+  'Cañar',
+  'Carchi',
+  'Chimborazo',
+  'Cotopaxi',
+  'El Oro',
+  'Esmeraldas',
+  'Galápagos',
+  'Guayas',
+  'Imbabura',
+  'Loja',
+  'Los Ríos',
+  'Manabí',
+  'Morona Santiago',
+  'Napo',
+  'Orellana',
+  'Pastaza',
+  'Pichincha',
+  'Santa Elena',
+  'Santo Domingo de los Tsáchilas',
+  'Sucumbíos',
+  'Tungurahua',
+  'Zamora Chinchipe',
+]);
+
+const AGE_RANGES = new Set([
+  '18-24',
+  '25-34',
+  '35-44',
+  '45-54',
+  '55-64',
+  '65+',
+]);
+
+const FINANCIAL_INTERESTS = new Set([
+  'ahorro',
+  'creditos_financiamiento',
+  'inversiones',
+  'seguros',
+  'emprendimiento',
+  'educacion_financiera',
+]);
+
+const TERMS_VERSION = '2026-08-12';
+
 function buildPublicUser(user) {
   return {
     id: user.id,
@@ -35,6 +82,10 @@ router.post('/register', async (req, res) => {
     name,
     email,
     phone,
+    province,
+    ageRange,
+    interests,
+    termsAccepted,
     password,
     confirmPassword,
   } = req.body || {};
@@ -42,28 +93,68 @@ router.post('/register', async (req, res) => {
   const normalizedName = typeof name === 'string' ? name.trim() : '';
   const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
   const normalizedPhone = typeof phone === 'string' ? phone.replace(/\s+/g, '') : '';
+  const normalizedProvince = typeof province === 'string' ? province.trim() : '';
+  const normalizedAgeRange = typeof ageRange === 'string' ? ageRange.trim() : '';
+  const normalizedInterests = Array.isArray(interests)
+    ? [...new Set(
+      interests
+        .filter((item) => typeof item === 'string')
+        .map((item) => item.trim()),
+    )]
+    : [];
 
   if (
     !normalizedName ||
     !normalizedEmail ||
     !normalizedPhone ||
+    !normalizedProvince ||
+    !normalizedAgeRange ||
     typeof password !== 'string' ||
     typeof confirmPassword !== 'string'
   ) {
     return res.status(400).json({ error: 'Completa todos los campos del registro.' });
   }
 
-  if (normalizedName.length < 3) {
-    return res.status(400).json({ error: 'El nombre debe tener al menos 3 caracteres.' });
+  if (normalizedName.length < 3 || normalizedName.length > 100) {
+    return res.status(400).json({
+      error: 'El nombre debe tener entre 3 y 100 caracteres.',
+    });
   }
 
-  if (!EMAIL_PATTERN.test(normalizedEmail)) {
+  if (!EMAIL_PATTERN.test(normalizedEmail) || normalizedEmail.length > 120) {
     return res.status(400).json({ error: 'Ingresa un correo electrónico válido.' });
   }
 
   if (!ECUADOR_MOBILE_PATTERN.test(normalizedPhone)) {
     return res.status(400).json({
       error: 'El celular debe tener formato ecuatoriano 09XXXXXXXX.',
+    });
+  }
+
+  if (!PROVINCES.has(normalizedProvince)) {
+    return res.status(400).json({
+      error: 'Selecciona una provincia válida del Ecuador.',
+    });
+  }
+
+  if (!AGE_RANGES.has(normalizedAgeRange)) {
+    return res.status(400).json({
+      error: 'Selecciona un rango de edad válido.',
+    });
+  }
+
+  if (
+    normalizedInterests.length === 0 ||
+    normalizedInterests.some((interest) => !FINANCIAL_INTERESTS.has(interest))
+  ) {
+    return res.status(400).json({
+      error: 'Selecciona al menos un interés financiero válido.',
+    });
+  }
+
+  if (termsAccepted !== true) {
+    return res.status(400).json({
+      error: 'Debes aceptar los Términos y Condiciones y la Política de Privacidad.',
     });
   }
 
@@ -89,6 +180,11 @@ router.post('/register', async (req, res) => {
       name: normalizedName,
       email: normalizedEmail,
       phone: normalizedPhone,
+      province: normalizedProvince,
+      ageRange: normalizedAgeRange,
+      interests: normalizedInterests,
+      termsAccepted: true,
+      termsVersion: TERMS_VERSION,
       passwordHash,
     });
 
@@ -99,6 +195,12 @@ router.post('/register', async (req, res) => {
   } catch (error) {
     if (error?.code === '23505') {
       return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' });
+    }
+
+    if (error?.code === 'ALFI_INVALID_INTERESTS') {
+      return res.status(400).json({
+        error: 'Uno o más intereses financieros no son válidos.',
+      });
     }
 
     console.error('[auth.routes] Error al registrar usuario:', error.message);
