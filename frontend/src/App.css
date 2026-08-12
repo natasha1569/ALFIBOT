@@ -2339,6 +2339,18 @@ html {
   animation: voicePulse 1.15s ease-in-out infinite;
 }
 
+.image-ocr-box {
+  border-left: 4px solid #2563eb;
+  background: #f8fbff;
+}
+
+.image-ocr-copy {
+  color: #334155;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 @keyframes voicePulse {
   0%, 100% {
     transform: scale(1);

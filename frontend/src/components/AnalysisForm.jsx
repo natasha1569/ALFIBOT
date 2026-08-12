@@ -12,6 +12,12 @@ const TABS = [
 ];
 
 const MAX_TEXT_LENGTH = 5000;
+const MAX_IMAGE_SIZE_MB = 6;
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+]);
 
 const VOICE_ERROR_MESSAGES = {
   "not-allowed":
@@ -142,7 +148,7 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       setFileError(
         "Selecciona un archivo de imagen válido: PNG, JPG, JPEG o WEBP.",
       );
@@ -150,10 +156,9 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
       return;
     }
 
-    const maxFileSizeMb = 6;
-    if (file.size > maxFileSizeMb * 1024 * 1024) {
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
       setFileError(
-        `La imagen pesa demasiado. Usa una captura menor a ${maxFileSizeMb} MB.`,
+        `La imagen pesa demasiado. Usa una captura menor a ${MAX_IMAGE_SIZE_MB} MB.`,
       );
       setImageData(null);
       return;
@@ -359,7 +364,7 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
                 id="image-input"
                 className="form-control form-control-lg"
                 type="file"
-                accept="image/*"
+                accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 disabled={isLoading}

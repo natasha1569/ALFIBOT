@@ -5,7 +5,8 @@ import { clearAuthSession, getAuthToken } from '../auth/authStorage.js';
 // eso vive exclusivamente en el backend.
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_REQUEST_TIMEOUT_MS || 45000);
+// El análisis de imágenes ejecuta dos etapas: visión/OCR y evaluación de riesgo.
+const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_REQUEST_TIMEOUT_MS || 90000);
 
 async function request(path, options = {}) {
   const controller = new AbortController();
