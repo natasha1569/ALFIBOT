@@ -1,5 +1,9 @@
 import OpenAI from 'openai';
-import { systemPrompt, riskLevels } from '../config/aiPolicy.js';
+import {
+  normalizeFraudCategory,
+  riskLevels,
+  systemPrompt,
+} from '../config/aiPolicy.js';
 import {
   buildImageExtractionInput,
   imageExtractionInstructions,
@@ -248,7 +252,7 @@ function parseJsonResponse(response, sourceLabel = 'La IA') {
   }
 }
 
-function normalizeResult(parsed) {
+export function normalizeResult(parsed) {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('Respuesta de la IA vacía o inválida.');
   }
@@ -263,6 +267,7 @@ function normalizeResult(parsed) {
   return {
     allowed: true,
     riskLevel: riskLevels.includes(parsed.riskLevel) ? parsed.riskLevel : 'medio',
+    fraudCategory: normalizeFraudCategory(parsed.fraudCategory),
     summary: typeof parsed.summary === 'string' ? parsed.summary : '',
     warningSigns: Array.isArray(parsed.warningSigns) ? parsed.warningSigns.filter((s) => typeof s === 'string') : [],
     recommendations: Array.isArray(parsed.recommendations)

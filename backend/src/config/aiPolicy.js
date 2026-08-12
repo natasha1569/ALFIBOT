@@ -27,6 +27,81 @@ export const rejectedTopics = [
 
 export const riskLevels = ["bajo", "medio", "alto"];
 
+export const fraudCategories = Object.freeze([
+  Object.freeze({
+    value: "credito_falso",
+    label: "Crédito falso",
+    description: "Oferta de crédito o préstamo inexistente, engañosa o sin una entidad responsable verificable.",
+  }),
+  Object.freeze({
+    value: "ponzi",
+    label: "Esquema Ponzi",
+    description: "Pago de supuestos rendimientos con el dinero aportado por nuevos participantes.",
+  }),
+  Object.freeze({
+    value: "piramidal",
+    label: "Esquema piramidal",
+    description: "Modelo que depende principalmente del reclutamiento de nuevos participantes o referidos.",
+  }),
+  Object.freeze({
+    value: "inversion_fraudulenta",
+    label: "Inversión fraudulenta",
+    description: "Inversión inexistente o engañosa con promesas de rentabilidad falsa, garantizada o poco realista.",
+  }),
+  Object.freeze({
+    value: "phishing",
+    label: "Phishing financiero",
+    description: "Suplantación de una entidad o persona para capturar credenciales, claves o información financiera.",
+  }),
+  Object.freeze({
+    value: "pago_anticipado",
+    label: "Fraude de pago anticipado",
+    description: "Solicitud de depósitos, comisiones, garantías o trámites previos para recibir un beneficio inexistente.",
+  }),
+  Object.freeze({
+    value: "robo_datos",
+    label: "Robo de datos",
+    description: "Captación engañosa de datos personales, documentos o información bancaria para un uso no autorizado.",
+  }),
+  Object.freeze({
+    value: "otro",
+    label: "Otro",
+    description: "Posible fraude financiero relevante que no encaja de forma suficiente en las categorías anteriores.",
+  }),
+]);
+
+export const fraudCategoryValues = Object.freeze(
+  fraudCategories.map(({ value }) => value),
+);
+
+const fraudCategoryAliases = Object.freeze({
+  credito_fraudulento: "credito_falso",
+  prestamo_falso: "credito_falso",
+  prestamo_fraudulento: "credito_falso",
+  esquema_ponzi: "ponzi",
+  esquema_piramidal: "piramidal",
+  fraude_de_inversion: "inversion_fraudulenta",
+  fraude_inversion: "inversion_fraudulenta",
+  phishing_financiero: "phishing",
+  fraude_de_pago_anticipado: "pago_anticipado",
+  robo_de_datos: "robo_datos",
+});
+
+export function normalizeFraudCategory(value) {
+  const normalized = String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  const canonicalValue = fraudCategoryAliases[normalized] || normalized;
+
+  return fraudCategoryValues.includes(canonicalValue)
+    ? canonicalValue
+    : "otro";
+}
+
 export const trustedEntitySignals = [
   "Dominio propio institucional y no un enlace acortado, opaco o sospechoso.",
   "Nombre comercial claro y consistente en la página.",
@@ -142,6 +217,7 @@ Si el contenido SÍ es relevante para el sistema, usa exactamente esta forma:
 {
   "allowed": true,
   "riskLevel": "bajo" | "medio" | "alto",
+  "fraudCategory": "credito_falso" | "ponzi" | "piramidal" | "inversion_fraudulenta" | "phishing" | "pago_anticipado" | "robo_datos" | "otro",
   "summary": "Resumen breve del análisis (2 a 3 frases).",
   "warningSigns": ["Señal 1", "Señal 2", "Señal 3"],
   "recommendations": ["Recomendación 1", "Recomendación 2", "Recomendación 3"],
@@ -176,6 +252,9 @@ ${highRiskCriteria.map((t) => `- ${t}`).join("\n")}
 REGLAS CRÍTICAS DE CLASIFICACIÓN:
 ${criticalRules.map((t) => `- ${t}`).join("\n")}
 
+CATEGORÍAS FORMALES DE FRAUDE:
+${fraudCategories.map((category) => `- ${category.value}: ${category.label}. ${category.description}`).join("\n")}
+
 SEÑALES DE RESPALDO O CONFIANZA INSTITUCIONAL:
 ${trustedEntitySignals.map((t) => `- ${t}`).join("\n")}
 
@@ -202,7 +281,8 @@ REGLAS GENERALES:
 8. No clasifiques como alto únicamente porque aparece la palabra WhatsApp. Clasifica como alto cuando WhatsApp, número celular o contacto privado sea el canal principal y además falte información verificable sobre la entidad, condiciones, tasa, plazo, requisitos o respaldo institucional.
 9. Para links opacos o publicitarios, evalúa señales técnicas aunque no aparezca explícitamente la palabra crédito. Si hay dominio no institucional, ruta aleatoria, parámetros de campaña y ausencia de entidad verificable, el caso sí pertenece al alcance preventivo del sistema.
 10. Para imágenes o capturas de redes sociales, analiza también el contexto visual de la plataforma. Si aparece Facebook Marketplace, grupos de compraventa, botón de enviar mensaje al vendedor o publicación de perfil no institucional junto con oferta de crédito o dinero, considera esa combinación como señal crítica de riesgo.
-11. Sé consistente: ante señales similares, entrega niveles de riesgo similares.
+11. Identifica una sola categoría formal de fraude, seleccionando la más específica según la evidencia disponible. Usa "otro" únicamente cuando ninguna categoría anterior describa suficientemente el caso.
+12. Sé consistente: ante señales similares, entrega niveles de riesgo y categorías similares.
 
 ${outputFormatDescription}
 `.trim();
