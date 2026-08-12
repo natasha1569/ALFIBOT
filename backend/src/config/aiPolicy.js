@@ -217,6 +217,7 @@ Si el contenido SÍ es relevante para el sistema, usa exactamente esta forma:
 {
   "allowed": true,
   "riskLevel": "bajo" | "medio" | "alto",
+  "fraudCategory": "credito_falso" | "ponzi" | "piramidal" | "inversion_fraudulenta" | "phishing" | "pago_anticipado" | "robo_datos" | "otro",
   "summary": "Resumen breve del análisis (2 a 3 frases).",
   "warningSigns": ["Señal 1", "Señal 2", "Señal 3"],
   "recommendations": ["Recomendación 1", "Recomendación 2", "Recomendación 3"],

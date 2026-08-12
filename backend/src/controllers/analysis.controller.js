@@ -225,6 +225,7 @@ export async function analyzeContent(req, res) {
       id: savedAnalysis.analisis_id,
       createdAt: savedAnalysis.fecha_creacion,
       riskLevel,
+      fraudCategory: result.fraudCategory,
       summary: result.summary,
       warningSigns,
       recommendations,
