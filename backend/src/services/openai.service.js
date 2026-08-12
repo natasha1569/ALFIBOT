@@ -1,5 +1,11 @@
 import OpenAI from 'openai';
 import { systemPrompt, riskLevels } from '../config/aiPolicy.js';
+import {
+  buildImageExtractionInput,
+  imageExtractionInstructions,
+  normalizeImageEvidence,
+  runImageAnalysisPipeline,
+} from './imageAnalysis.service.js';
 
 const DEFAULT_MESSAGE =
   'Este sistema solo analiza posibles fraudes financieros digitales, estafas piramidales, inversiones sospechosas, créditos o préstamos engañosos.';
@@ -141,7 +147,7 @@ ${linkContext.visibleText || 'No se logró extraer texto visible.'}
 `.trim();
 }
 
-function buildPromptText({ type, content, linkContext }) {
+function buildPromptText({ type, content, linkContext, imageRiskContext }) {
   if (type === 'text') {
     return `Analiza el siguiente texto de una publicación, mensaje o anuncio financiero:\n\n"""${content}"""`;
   }
@@ -158,17 +164,26 @@ ${formatLinkContext(linkContext)}`;
   }
 
   if (type === 'image') {
-    return 'Analiza la siguiente imagen o captura de pantalla en busca de señales de fraude financiero, inversión engañosa, crédito sospechoso, préstamo falso o esquema piramidal.';
+    return `Analiza la siguiente imagen o captura de pantalla en busca de señales de fraude financiero, inversión engañosa, crédito sospechoso, préstamo falso o esquema piramidal.
+
+El backend ejecutó primero una etapa independiente de visión/OCR. Usa la evidencia estructurada siguiente como apoyo y contrástala con la imagen original:
+
+${imageRiskContext || 'No se proporcionó evidencia OCR adicional.'}`;
   }
 
   throw new Error(`Tipo de contenido no soportado: ${type}`);
 }
 
-function buildResponsesInput({ type, content, linkContext }) {
+function buildResponsesInput({ type, content, linkContext, imageRiskContext }) {
   const parts = [
     {
       type: 'input_text',
-      text: buildPromptText({ type, content, linkContext }),
+      text: buildPromptText({
+        type,
+        content,
+        linkContext,
+        imageRiskContext,
+      }),
     },
   ];
 
@@ -177,7 +192,7 @@ function buildResponsesInput({ type, content, linkContext }) {
     parts.push({
       type: 'input_image',
       image_url: dataUri,
-      detail: 'auto',
+      detail: 'high',
     });
   }
 
@@ -213,6 +228,24 @@ function cleanJsonText(raw) {
     .replace(/^```\s*/i, '')
     .replace(/```$/i, '')
     .trim();
+}
+
+function parseJsonResponse(response, sourceLabel = 'La IA') {
+  const raw = extractOutputText(response);
+
+  if (!raw) {
+    throw new Error(`${sourceLabel} no devolvió contenido.`);
+  }
+
+  try {
+    return JSON.parse(cleanJsonText(raw));
+  } catch {
+    console.error(
+      `[openai.service] ${sourceLabel} devolvió una respuesta no JSON:`,
+      raw.slice(0, 800),
+    );
+    throw new Error(`${sourceLabel} devolvió texto que no es JSON válido.`);
+  }
 }
 
 function normalizeResult(parsed) {
@@ -257,20 +290,53 @@ async function callModel({ client, model, input }) {
     store: false,
   });
 
-  const raw = extractOutputText(response);
-  if (!raw) {
-    throw new Error('La IA no devolvió contenido.');
+  return normalizeResult(parseJsonResponse(response));
+}
+
+async function callImageExtractionModel({ client, model, image }) {
+  const response = await client.responses.create({
+    model,
+    instructions: imageExtractionInstructions,
+    input: buildImageExtractionInput(image.dataUri),
+    max_output_tokens: 1400,
+    store: false,
+  });
+
+  return normalizeImageEvidence(parseJsonResponse(response, 'El componente OCR'));
+}
+
+async function analyzeUsingModel({
+  client,
+  model,
+  type,
+  content,
+  linkContext,
+}) {
+  if (type === 'image') {
+    return runImageAnalysisPipeline({
+      content,
+      extractEvidence: (image) => callImageExtractionModel({
+        client,
+        model,
+        image,
+      }),
+      analyzeEvidence: ({ image, riskContext }) => callModel({
+        client,
+        model,
+        input: buildResponsesInput({
+          type,
+          content: image.dataUri,
+          imageRiskContext: riskContext,
+        }),
+      }),
+    });
   }
 
-  let parsed;
-  try {
-    parsed = JSON.parse(cleanJsonText(raw));
-  } catch {
-    console.error('[openai.service] Respuesta no JSON recibida:', raw.slice(0, 800));
-    throw new Error('La IA devolvió texto que no es JSON válido.');
-  }
-
-  return normalizeResult(parsed);
+  return callModel({
+    client,
+    model,
+    input: buildResponsesInput({ type, content, linkContext }),
+  });
 }
 
 export async function analyzeWithAI({ type, content, linkContext = null }) {
@@ -291,10 +357,15 @@ export async function analyzeWithAI({ type, content, linkContext = null }) {
   const fallbackModel = process.env.OPENAI_FALLBACK_MODEL || null;
 
   const client = getClient(apiKey);
-  const input = buildResponsesInput({ type, content, linkContext });
 
   try {
-    return await callModel({ client, model: primaryModel, input });
+    return await analyzeUsingModel({
+      client,
+      model: primaryModel,
+      type,
+      content,
+      linkContext,
+    });
   } catch (primaryError) {
     const primaryMessage = getOpenAIErrorMessage(primaryError);
     console.error(`[openai.service] Falló el modelo principal (${primaryModel}): ${primaryMessage}`);
@@ -305,7 +376,13 @@ export async function analyzeWithAI({ type, content, linkContext = null }) {
 
     try {
       console.warn(`[openai.service] Reintentando con el modelo de respaldo (${fallbackModel})...`);
-      return await callModel({ client, model: fallbackModel, input });
+      return await analyzeUsingModel({
+        client,
+        model: fallbackModel,
+        type,
+        content,
+        linkContext,
+      });
     } catch (fallbackError) {
       const fallbackMessage = getOpenAIErrorMessage(fallbackError);
       console.error(`[openai.service] También falló el modelo de respaldo (${fallbackModel}): ${fallbackMessage}`);

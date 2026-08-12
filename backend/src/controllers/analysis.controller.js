@@ -1,5 +1,9 @@
 import { analyzeWithAI } from '../services/openai.service.js';
 import { extractLinkContext } from '../services/linkExtractor.service.js';
+import {
+  ImageValidationError,
+  validateImageDataUri,
+} from '../services/imageAnalysis.service.js';
 import pool from '../config/database.js';
 
 const VALID_TYPES = ['text', 'link', 'image'];
@@ -89,25 +93,29 @@ export async function analyzeContent(req, res) {
       });
     }
 
-    if (
-      type === 'image' &&
-      !content.trim().startsWith('data:image') &&
-      content.trim().length < 50
-    ) {
-      return res.status(400).json({
-        error: 'La imagen recibida no parece válida.',
-      });
+    let normalizedContent = content.trim();
+
+    if (type === 'image') {
+      try {
+        normalizedContent = validateImageDataUri(content).dataUri;
+      } catch (error) {
+        if (error instanceof ImageValidationError) {
+          return res.status(400).json({ error: error.message });
+        }
+
+        throw error;
+      }
     }
 
     let linkContext = null;
 
     if (type === 'link') {
-      linkContext = await extractLinkContext(content);
+      linkContext = await extractLinkContext(normalizedContent);
     }
 
     const result = await analyzeWithAI({
       type,
-      content,
+      content: normalizedContent,
       linkContext,
     });
 
@@ -124,7 +132,7 @@ export async function analyzeContent(req, res) {
     }
 
     const riskLevel = normalizeRiskLevel(result.riskLevel);
-    const preview = createPreview(type, content);
+    const preview = createPreview(type, normalizedContent);
     const warningSigns = Array.isArray(result.warningSigns)
       ? result.warningSigns
       : [];
@@ -164,7 +172,7 @@ export async function analyzeContent(req, res) {
       [
         userId,
         type,
-        content.trim(),
+        normalizedContent,
         preview,
         riskLevel,
         result.summary || 'Análisis realizado correctamente.',
@@ -221,6 +229,12 @@ export async function analyzeContent(req, res) {
       warningSigns,
       recommendations,
       disclaimer: result.disclaimer,
+      ...(type === 'image'
+        ? {
+            extractedText: result.extractedText || '',
+            imageEvidence: result.imageEvidence || null,
+          }
+        : {}),
     });
   } catch (error) {
     if (client) {

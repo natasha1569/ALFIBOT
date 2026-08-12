@@ -135,6 +135,16 @@ export default function ResultCard({
 
         {result.summary && <p className="result-summary lead mb-4">{result.summary}</p>}
 
+        {result.extractedText && (
+          <div className="detail-box image-ocr-box mb-4">
+            <h3>
+              <i className="bi bi-file-earmark-text me-2"></i>
+              Texto detectado en la imagen
+            </h3>
+            <p className="image-ocr-copy mb-0">{result.extractedText}</p>
+          </div>
+        )}
+
         <div className="row g-4">
           {result.warningSigns?.length > 0 && (
             <div className="col-lg-6">
