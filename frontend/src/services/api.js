@@ -74,6 +74,22 @@ export function login(credentials) {
   });
 }
 
+export function loginAdmin(credentials) {
+  return request('/api/auth/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: '' },
+    body: JSON.stringify(credentials),
+  });
+}
+
+export function loginAuditor(credentials) {
+  return request('/api/auth/auditor/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: '' },
+    body: JSON.stringify(credentials),
+  });
+}
+
 export function registerUser(registration) {
   return request('/api/auth/register', {
     method: 'POST',

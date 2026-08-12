@@ -3,7 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import analysisRoutes from './routes/analysis.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import privilegedAuthRoutes from './routes/privileged-auth.routes.js';
 import authMiddleware from './middlewares/auth.middleware.js';
+import { requirePermission } from './middlewares/authorization.middleware.js';
+import { PERMISSIONS } from './config/permissions.js';
 import pool from './config/database.js';
 
 dotenv.config();
@@ -32,7 +35,11 @@ app.get('/', (req, res) => {
 // ======================================================
 
 if (diagnosticsEnabled) {
-  app.get('/api/database/test', authMiddleware, async (req, res) => {
+  app.get(
+    '/api/database/test',
+    authMiddleware,
+    requirePermission(PERMISSIONS.DATABASE_DIAGNOSTICS),
+    async (req, res) => {
     try {
       const result = await pool.query(`
         SELECT
@@ -54,9 +61,14 @@ if (diagnosticsEnabled) {
         message: 'Error al conectar con PostgreSQL.',
       });
     }
-  });
+    },
+  );
 
-  app.get('/api/database/analisis', authMiddleware, async (req, res) => {
+  app.get(
+    '/api/database/analisis',
+    authMiddleware,
+    requirePermission(PERMISSIONS.DATABASE_DIAGNOSTICS),
+    async (req, res) => {
     try {
       const result = await pool.query(`
         SELECT *
@@ -72,7 +84,8 @@ if (diagnosticsEnabled) {
         error: 'No se pudo consultar la información solicitada.',
       });
     }
-  });
+    },
+  );
 }
 
 
@@ -81,6 +94,7 @@ if (diagnosticsEnabled) {
 // ======================================================
 
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', privilegedAuthRoutes);
 
 app.use('/api/analysis', authMiddleware, analysisRoutes);
 
