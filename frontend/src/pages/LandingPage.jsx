@@ -13,12 +13,6 @@ export default function LandingPage({ onStart, onLogin }) {
             </div>
           </div>
 
-          <nav className="alfi-menu">
-            <a href="#proyecto">Proyecto</a>
-            <a href="#funciones">Funciones</a>
-            <a href="#como-funciona">Cómo funciona</a>
-          </nav>
-
           <div className="alfi-nav-actions">
             <button
               type="button"
@@ -76,11 +70,6 @@ export default function LandingPage({ onStart, onLogin }) {
                 <i className="bi bi-search"></i>
                 Iniciar Prueba Gratuita
               </button>
-
-              <a href="#como-funciona" className="btn-secondary">
-                <i className="bi bi-play-circle"></i>
-                Ver cómo funciona
-              </a>
             </div>
 
             <div className="hero-points">
@@ -179,83 +168,6 @@ export default function LandingPage({ onStart, onLogin }) {
               <i className="bi bi-shield-check"></i>
               <span>SISTEMA PROTEGIDO</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="benefits-section" id="funciones">
-        <div className="alfi-container benefits-grid">
-          <article>
-            <div className="benefit-icon">
-              <i className="bi bi-shield-check"></i>
-            </div>
-
-            <div>
-              <h3>Prevención inteligente</h3>
-              <p>Identifica señales de riesgo antes de que sea tarde.</p>
-            </div>
-          </article>
-
-          <article>
-            <div className="benefit-icon">
-              <i className="bi bi-lock"></i>
-            </div>
-
-            <div>
-              <h3>Protege tu información</h3>
-              <p>Evita compartir tus datos con fuentes no confiables.</p>
-            </div>
-          </article>
-
-          <article>
-            <div className="benefit-icon">
-              <i className="bi bi-clock"></i>
-            </div>
-
-            <div>
-              <h3>Ahorra tiempo</h3>
-              <p>Obtén análisis rápidos y claros.</p>
-            </div>
-          </article>
-
-          <article>
-            <div className="benefit-icon">
-              <i className="bi bi-check-circle"></i>
-            </div>
-
-            <div>
-              <h3>Decisiones seguras</h3>
-              <p>Toma decisiones financieras con mayor confianza.</p>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section className="how-section" id="como-funciona">
-        <div className="alfi-container">
-          <div className="section-title">
-            <span>CÓMO FUNCIONA</span>
-            <h2>Analiza contenido en tres pasos</h2>
-          </div>
-
-          <div className="steps-grid">
-            <article>
-              <span className="step-number">01</span>
-              <h3>Ingresa contenido</h3>
-              <p>Escribe un texto, pega un enlace o carga una imagen.</p>
-            </article>
-
-            <article>
-              <span className="step-number">02</span>
-              <h3>ALFI BOT revisa</h3>
-              <p>El sistema identifica señales relacionadas con posibles riesgos.</p>
-            </article>
-
-            <article>
-              <span className="step-number">03</span>
-              <h3>Consulta el resultado</h3>
-              <p>Recibe nivel de riesgo y recomendaciones preventivas.</p>
-            </article>
           </div>
         </div>
       </section>
