@@ -1,9 +1,4 @@
 import { Router } from 'express';
-import {
-  authUser,
-  hashPassword,
-  hashesMatch,
-} from '../config/auth.config.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
 import { createAuthToken } from '../services/token.service.js';
 import {
@@ -239,6 +234,12 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
       }
 
+      if (databaseUser.role !== 'usuario') {
+        return res.status(403).json({
+          error: 'Esta cuenta debe ingresar desde su acceso institucional.',
+        });
+      }
+
       const publicUser = buildPublicUser(databaseUser);
 
       return res.json({
@@ -246,39 +247,12 @@ router.post('/login', async (req, res) => {
         user: publicUser,
       });
     }
-  } catch (error) {
-    const legacyHash = hashPassword(password);
-    const legacyCredentialsAreValid =
-      normalizedEmail === authUser.email &&
-      hashesMatch(legacyHash, authUser.passwordHash);
 
-    if (!legacyCredentialsAreValid) {
-      console.error('[auth.routes] Error consultando usuarios:', error.message);
-      return res.status(500).json({ error: 'No se pudo validar la cuenta.' });
-    }
-  }
-
-  // Compatibilidad temporal con el usuario local previo a AFB-309.
-  const legacyHash = hashPassword(password);
-  const legacyCredentialsAreValid =
-    normalizedEmail === authUser.email &&
-    hashesMatch(legacyHash, authUser.passwordHash);
-
-  if (!legacyCredentialsAreValid) {
     return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
+  } catch (error) {
+    console.error('[auth.routes] Error consultando usuarios:', error.message);
+    return res.status(500).json({ error: 'No se pudo validar la cuenta.' });
   }
-
-  const publicUser = {
-    id: authUser.id,
-    name: authUser.name,
-    email: authUser.email,
-    role: authUser.role,
-  };
-
-  return res.json({
-    token: createAuthToken(publicUser),
-    user: publicUser,
-  });
 });
 
 router.get('/me', authMiddleware, (req, res) => {
