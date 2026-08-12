@@ -7,6 +7,7 @@ import ShareModal from "../components/ShareModal.jsx";
 import { analyzeContent, clearHistory, fetchHistory } from "../services/api.js";
 import { copyShareSummary, downloadReportPdf, openWhatsappWeb } from "../services/shareReport.service.js";
 import { getAssistantState } from "../utils/risk.js";
+import { normalizeHistoryItems } from "../utils/history.js";
 import {
   buildAnalysisSpeech,
   getAvailableSpanishVoices,
@@ -40,7 +41,7 @@ export default function Home() {
     setIsHistoryLoading(true);
     try {
       const data = await fetchHistory();
-      setHistory(Array.isArray(data) ? data : []);
+      setHistory(normalizeHistoryItems(data));
     } catch {
       setHistory([]);
     } finally {
