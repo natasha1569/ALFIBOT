@@ -1,4 +1,5 @@
 import { normalizeRiskLevel } from '../utils/risk.js';
+import { getFraudCategoryLabel } from '../utils/fraudCategory.js';
 
 const RISK_CONFIG = {
   bajo: {
@@ -69,6 +70,7 @@ export default function ResultCard({
 
   const riskLevel = normalizeRiskLevel(result.riskLevel);
   const config = RISK_CONFIG[riskLevel];
+  const fraudCategoryLabel = getFraudCategoryLabel(result.fraudCategory);
 
   return (
     <section className={`result-card card border-0 shadow-lg ${config.className}`}>
@@ -132,6 +134,16 @@ export default function ResultCard({
         <div className={`risk-meter ${config.className}`} aria-hidden="true">
           <span></span>
         </div>
+
+        {fraudCategoryLabel && (
+          <div className="alert alert-light border d-flex align-items-center gap-2 mb-4" role="status">
+            <i className="bi bi-shield-exclamation"></i>
+            <div>
+              <span className="text-secondary me-2">Categoría de fraude:</span>
+              <strong>{fraudCategoryLabel}</strong>
+            </div>
+          </div>
+        )}
 
         {result.summary && <p className="result-summary lead mb-4">{result.summary}</p>}
 

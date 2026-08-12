@@ -101,3 +101,14 @@ export function registerUser(registration) {
 export function fetchCurrentUser() {
   return request('/api/auth/me');
 }
+
+export function fetchFraudTrends(filters = {}) {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) params.set(key, value);
+  });
+
+  const query = params.toString();
+  return request(`/api/reporting/fraud-trends${query ? `?${query}` : ''}`);
+}

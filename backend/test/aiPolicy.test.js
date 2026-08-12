@@ -14,10 +14,6 @@ const EXPECTED_CATEGORIES = [
   'ponzi',
   'piramidal',
   'inversion_fraudulenta',
-  'phishing',
-  'pago_anticipado',
-  'robo_datos',
-  'otro',
 ];
 
 test('la taxonomía define valores canónicos únicos y reutilizables', () => {
@@ -35,12 +31,12 @@ test('normalizeFraudCategory acepta valores canónicos y alias frecuentes', () =
   assert.equal(normalizeFraudCategory('Préstamo fraudulento'), 'credito_falso');
   assert.equal(normalizeFraudCategory('Esquema Ponzi'), 'ponzi');
   assert.equal(normalizeFraudCategory('Fraude de inversión'), 'inversion_fraudulenta');
-  assert.equal(normalizeFraudCategory('Robo de datos'), 'robo_datos');
+  assert.equal(normalizeFraudCategory('Esquema piramidal'), 'piramidal');
 });
 
-test('normalizeFraudCategory usa otro ante valores vacíos o desconocidos', () => {
-  assert.equal(normalizeFraudCategory('modalidad no catalogada'), 'otro');
-  assert.equal(normalizeFraudCategory(null), 'otro');
+test('normalizeFraudCategory devuelve null ante valores vacíos o desconocidos', () => {
+  assert.equal(normalizeFraudCategory('modalidad no catalogada'), null);
+  assert.equal(normalizeFraudCategory(null), null);
 });
 
 test('el prompt central enumera todas las categorías formales', () => {
@@ -72,13 +68,13 @@ test('normalizeResult incluye una categoría válida en respuestas permitidas', 
   assert.equal(result.fraudCategory, 'ponzi');
 });
 
-test('normalizeResult usa otro cuando la IA omite o inventa la categoría', () => {
+test('normalizeResult conserva categoría nula cuando la IA omite o inventa la categoría', () => {
   assert.equal(
     normalizeResult({ allowed: true, fraudCategory: 'categoría inventada' }).fraudCategory,
-    'otro',
+    null,
   );
   assert.equal(
     normalizeResult({ allowed: true }).fraudCategory,
-    'otro',
+    null,
   );
 });
