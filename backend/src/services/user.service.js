@@ -142,3 +142,72 @@ export async function createRegisteredUser({
     client.release();
   }
 }
+
+export async function listUsers({
+  search = '',
+  role = '',
+  active = null,
+} = {}, db = pool) {
+  const result = await db.query(
+    `
+      SELECT
+        u.usuario_id AS id,
+        u.nombre AS name,
+        u.correo AS email,
+        u.celular AS phone,
+        u.provincia AS province,
+        u.rango_edad AS "ageRange",
+        u.activo AS active,
+        r.nombre AS role
+      FROM alfi.usuarios u
+      INNER JOIN alfi.roles r
+        ON r.rol_id = u.rol_id
+      WHERE (
+        $1::text = ''
+        OR u.nombre ILIKE '%' || $1 || '%'
+        OR u.correo ILIKE '%' || $1 || '%'
+        OR COALESCE(u.celular, '') ILIKE '%' || $1 || '%'
+      )
+        AND ($2::text = '' OR r.nombre = $2)
+        AND ($3::boolean IS NULL OR u.activo = $3)
+      ORDER BY
+        u.activo DESC,
+        lower(u.nombre) ASC,
+        u.usuario_id ASC
+    `,
+    [search, role, active],
+  );
+
+  return result.rows;
+}
+
+export async function updateUserAdministration({
+  id,
+  role,
+  active,
+}, db = pool) {
+  const result = await db.query(
+    `
+      UPDATE alfi.usuarios AS u
+      SET
+        rol_id = r.rol_id,
+        activo = $3,
+        fecha_actualizacion = CURRENT_TIMESTAMP
+      FROM alfi.roles AS r
+      WHERE u.usuario_id = $1
+        AND r.nombre = $2
+      RETURNING
+        u.usuario_id AS id,
+        u.nombre AS name,
+        u.correo AS email,
+        u.celular AS phone,
+        u.provincia AS province,
+        u.rango_edad AS "ageRange",
+        u.activo AS active,
+        r.nombre AS role
+    `,
+    [id, role, active],
+  );
+
+  return result.rows[0] || null;
+}

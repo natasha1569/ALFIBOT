@@ -112,3 +112,27 @@ export function fetchFraudTrends(filters = {}) {
   const query = params.toString();
   return request(`/api/reporting/fraud-trends${query ? `?${query}` : ''}`);
 }
+
+function buildQuery(filters = {}) {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== '' && value !== null && value !== undefined) {
+      params.set(key, String(value));
+    }
+  });
+
+  const query = params.toString();
+  return query ? `?${query}` : '';
+}
+
+export function fetchAdminUsers(filters = {}) {
+  return request(`/api/admin/users${buildQuery(filters)}`);
+}
+
+export function updateAdminUser(userId, changes) {
+  return request(`/api/admin/users/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(changes),
+  });
+}

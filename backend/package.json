@@ -10,7 +10,8 @@
     "test": "node --test test/*.test.js",
     "test:image": "node --test test/imageAnalysis.service.test.js",
     "test:openai": "node test-openai.js",
-    "test:auth": "node test-auth.js"
+    "test:auth": "node test-auth.js",
+    "test:admin": "node test-admin-users.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
