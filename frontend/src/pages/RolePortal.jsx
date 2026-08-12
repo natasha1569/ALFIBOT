@@ -1,13 +1,13 @@
 import FraudTrendsDashboard from '../components/FraudTrendsDashboard.jsx';
+import AdminManagement from '../components/AdminManagement.jsx';
 
 const PORTAL_CONFIG = {
   administrador: {
     kicker: 'Administración',
     title: 'Panel administrativo',
-    copy: 'Gestión protegida de ALFI BOT. Los módulos de usuarios y licencias se incorporarán sobre esta base RBAC.',
+    copy: 'Gestión protegida de usuarios y accesos de ALFI BOT sobre la matriz RBAC vigente.',
     cards: [
       ['bi-people', 'Usuarios', 'Administrar roles y estado de las cuentas.'],
-      ['bi-key', 'Licencias', 'Gestionar vigencia y estado de licencias.'],
       ['bi-bar-chart', 'Reportería', 'Consultar tendencias agregadas de ALFI BOT.'],
       ['bi-database-check', 'Diagnóstico', 'Acceso restringido a controles técnicos.'],
     ],
@@ -15,7 +15,7 @@ const PORTAL_CONFIG = {
   auditor: {
     kicker: 'Auditoría',
     title: 'Centro de auditoría',
-    copy: 'Espacio de consulta sin funciones administrativas sobre usuarios o licencias.',
+    copy: 'Espacio de consulta sin funciones administrativas sobre usuarios o control de accesos.',
     cards: [
       ['bi-bar-chart', 'Reportería BI', 'Consultar patrones agregados por riesgo y categoría.'],
       ['bi-clipboard-data', 'Auditoría', 'Revisar trazabilidad técnica y actividad autorizada.'],
@@ -67,6 +67,10 @@ export default function RolePortal({
           </div>
         ))}
       </div>
+
+      {user.role === 'administrador' && (
+        <AdminManagement currentUser={user} />
+      )}
 
       <FraudTrendsDashboard />
     </main>

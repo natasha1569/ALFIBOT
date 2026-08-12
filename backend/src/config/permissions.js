@@ -13,7 +13,6 @@ export const PERMISSIONS = Object.freeze({
   REPORTING_READ: 'reporting:read',
   AUDIT_READ: 'audit:read',
   USERS_ADMIN: 'users:admin',
-  LICENSES_ADMIN: 'licenses:admin',
   DATABASE_DIAGNOSTICS: 'database:diagnostics',
 });
 
