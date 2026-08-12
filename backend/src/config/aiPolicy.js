@@ -15,14 +15,9 @@ export const allowedTopics = [
 ];
 
 export const rejectedTopics = [
-  "fútbol y deportes en general",
-  "farándula y entretenimiento",
-  "política general no relacionada con fraudes financieros",
-  "tareas escolares ajenas al tema",
-  "recetas de cocina",
-  "música",
-  "videojuegos",
-  "consultas personales sin relación financiera",
+  "consultas sin relación con prevención de fraude financiero",
+  "contenido general que no implique dinero, crédito, inversión o esquemas de captación",
+  "solicitudes que pretendan usar ALFI BOT para fines distintos del análisis preventivo de riesgos financieros",
 ];
 
 export const riskLevels = ["bajo", "medio", "alto"];
@@ -48,26 +43,6 @@ export const fraudCategories = Object.freeze([
     label: "Inversión fraudulenta",
     description: "Inversión inexistente o engañosa con promesas de rentabilidad falsa, garantizada o poco realista.",
   }),
-  Object.freeze({
-    value: "phishing",
-    label: "Phishing financiero",
-    description: "Suplantación de una entidad o persona para capturar credenciales, claves o información financiera.",
-  }),
-  Object.freeze({
-    value: "pago_anticipado",
-    label: "Fraude de pago anticipado",
-    description: "Solicitud de depósitos, comisiones, garantías o trámites previos para recibir un beneficio inexistente.",
-  }),
-  Object.freeze({
-    value: "robo_datos",
-    label: "Robo de datos",
-    description: "Captación engañosa de datos personales, documentos o información bancaria para un uso no autorizado.",
-  }),
-  Object.freeze({
-    value: "otro",
-    label: "Otro",
-    description: "Posible fraude financiero relevante que no encaja de forma suficiente en las categorías anteriores.",
-  }),
 ]);
 
 export const fraudCategoryValues = Object.freeze(
@@ -82,9 +57,6 @@ const fraudCategoryAliases = Object.freeze({
   esquema_piramidal: "piramidal",
   fraude_de_inversion: "inversion_fraudulenta",
   fraude_inversion: "inversion_fraudulenta",
-  phishing_financiero: "phishing",
-  fraude_de_pago_anticipado: "pago_anticipado",
-  robo_de_datos: "robo_datos",
 });
 
 export function normalizeFraudCategory(value) {
@@ -99,7 +71,7 @@ export function normalizeFraudCategory(value) {
 
   return fraudCategoryValues.includes(canonicalValue)
     ? canonicalValue
-    : "otro";
+    : null;
 }
 
 export const trustedEntitySignals = [
@@ -192,7 +164,7 @@ export const highRiskCriteria = [
   "La publicación muestra montos altos de crédito o ayuda económica sin tasa, plazo, requisitos completos, costos, regulación ni entidad responsable visible.",
   "Existe inconsistencia entre el monto ofrecido en la imagen, el precio de la publicación o el texto visible del anuncio.",
   "La publicación solicita escribir al vendedor, enviar mensaje privado o continuar por chat para obtener información financiera esencial.",
-  "Se detectan señales compatibles con estafa piramidal, préstamo falso, phishing financiero, captación informal o fraude de inversión.",
+  "Se detectan señales compatibles con estafa piramidal, préstamo falso, captación informal o fraude de inversión.",
 ];
 
 export const criticalRules = [
@@ -217,7 +189,7 @@ Si el contenido SÍ es relevante para el sistema, usa exactamente esta forma:
 {
   "allowed": true,
   "riskLevel": "bajo" | "medio" | "alto",
-  "fraudCategory": "credito_falso" | "ponzi" | "piramidal" | "inversion_fraudulenta" | "phishing" | "pago_anticipado" | "robo_datos" | "otro",
+  "fraudCategory": "credito_falso" | "ponzi" | "piramidal" | "inversion_fraudulenta" | null,
   "summary": "Resumen breve del análisis (2 a 3 frases).",
   "warningSigns": ["Señal 1", "Señal 2", "Señal 3"],
   "recommendations": ["Recomendación 1", "Recomendación 2", "Recomendación 3"],

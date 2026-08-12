@@ -132,6 +132,7 @@ export async function analyzeContent(req, res) {
     }
 
     const riskLevel = normalizeRiskLevel(result.riskLevel);
+    const fraudCategory = result.fraudCategory || null;
     const preview = createPreview(type, normalizedContent);
     const warningSigns = Array.isArray(result.warningSigns)
       ? result.warningSigns
@@ -161,10 +162,11 @@ export async function analyzeContent(req, res) {
           contenido,
           vista_previa,
           nivel_riesgo,
+          categoria_fraude,
           resumen,
           permitido
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING
           analisis_id,
           fecha_creacion
@@ -175,6 +177,7 @@ export async function analyzeContent(req, res) {
         normalizedContent,
         preview,
         riskLevel,
+        fraudCategory,
         result.summary || 'Análisis realizado correctamente.',
         true,
       ],
@@ -225,7 +228,7 @@ export async function analyzeContent(req, res) {
       id: savedAnalysis.analisis_id,
       createdAt: savedAnalysis.fecha_creacion,
       riskLevel,
-      fraudCategory: result.fraudCategory,
+      fraudCategory,
       summary: result.summary,
       warningSigns,
       recommendations,
@@ -270,6 +273,7 @@ export async function getHistory(req, res) {
         a.contenido AS content,
         a.vista_previa AS preview,
         a.nivel_riesgo AS "riskLevel",
+        a.categoria_fraude AS "fraudCategory",
         a.resumen AS summary,
         a.permitido AS allowed,
         a.fecha_creacion AS "createdAt",
