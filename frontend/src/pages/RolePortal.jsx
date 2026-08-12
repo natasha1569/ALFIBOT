@@ -1,3 +1,5 @@
+import FraudTrendsDashboard from '../components/FraudTrendsDashboard.jsx';
+
 const PORTAL_CONFIG = {
   administrador: {
     kicker: 'Administración',
@@ -65,6 +67,8 @@ export default function RolePortal({
           </div>
         ))}
       </div>
+
+      <FraudTrendsDashboard />
     </main>
   );
 }

@@ -26,50 +26,22 @@ export const fraudCategories = Object.freeze([
   Object.freeze({
     value: "credito_falso",
     label: "Crédito falso",
-    description:
-      "Oferta de crédito o préstamo inexistente, engañosa o sin una entidad responsable verificable.",
+    description: "Oferta de crédito o préstamo inexistente, engañosa o sin una entidad responsable verificable.",
   }),
   Object.freeze({
     value: "ponzi",
     label: "Esquema Ponzi",
-    description:
-      "Pago de supuestos rendimientos con el dinero aportado por nuevos participantes.",
+    description: "Pago de supuestos rendimientos con el dinero aportado por nuevos participantes.",
   }),
   Object.freeze({
     value: "piramidal",
     label: "Esquema piramidal",
-    description:
-      "Modelo que depende principalmente del reclutamiento de nuevos participantes o referidos.",
+    description: "Modelo que depende principalmente del reclutamiento de nuevos participantes o referidos.",
   }),
   Object.freeze({
     value: "inversion_fraudulenta",
     label: "Inversión fraudulenta",
-    description:
-      "Inversión inexistente o engañosa con promesas de rentabilidad falsa, garantizada o poco realista.",
-  }),
-  Object.freeze({
-    value: "phishing",
-    label: "Phishing",
-    description:
-      "Intento de engaño para obtener credenciales, información financiera o datos personales mediante mensajes, enlaces o sitios falsos.",
-  }),
-  Object.freeze({
-    value: "pago_anticipado",
-    label: "Pago anticipado",
-    description:
-      "Solicitud de dinero, comisión, garantía o depósito previo para acceder a un crédito, premio, inversión o beneficio financiero.",
-  }),
-  Object.freeze({
-    value: "robo_datos",
-    label: "Robo de datos",
-    description:
-      "Obtención engañosa o no autorizada de información personal, bancaria, financiera o credenciales.",
-  }),
-  Object.freeze({
-    value: "otro",
-    label: "Otro",
-    description:
-      "Posible fraude financiero que no corresponde de forma suficiente con las demás categorías definidas.",
+    description: "Inversión inexistente o engañosa con promesas de rentabilidad falsa, garantizada o poco realista.",
   }),
 ]);
 
@@ -81,23 +53,10 @@ const fraudCategoryAliases = Object.freeze({
   credito_fraudulento: "credito_falso",
   prestamo_falso: "credito_falso",
   prestamo_fraudulento: "credito_falso",
-
   esquema_ponzi: "ponzi",
   esquema_piramidal: "piramidal",
-
   fraude_de_inversion: "inversion_fraudulenta",
   fraude_inversion: "inversion_fraudulenta",
-
-  suplantacion: "phishing",
-  suplantacion_identidad: "phishing",
-
-  anticipo: "pago_anticipado",
-  pago_previo: "pago_anticipado",
-  pago_por_adelantado: "pago_anticipado",
-
-  robo_de_datos: "robo_datos",
-  robo_informacion: "robo_datos",
-  robo_de_informacion: "robo_datos",
 });
 
 export function normalizeFraudCategory(value) {
@@ -108,12 +67,11 @@ export function normalizeFraudCategory(value) {
     .trim()
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
-
   const canonicalValue = fraudCategoryAliases[normalized] || normalized;
 
   return fraudCategoryValues.includes(canonicalValue)
     ? canonicalValue
-    : "otro";
+    : null;
 }
 
 export const trustedEntitySignals = [
@@ -231,7 +189,7 @@ Si el contenido SÍ es relevante para el sistema, usa exactamente esta forma:
 {
   "allowed": true,
   "riskLevel": "bajo" | "medio" | "alto",
-  "fraudCategory": "credito_falso" | "ponzi" | "piramidal" | "inversion_fraudulenta" | "phishing" | "pago_anticipado" | "robo_datos" | "otro",
+  "fraudCategory": "credito_falso" | "ponzi" | "piramidal" | "inversion_fraudulenta" | null,
   "summary": "Resumen breve del análisis (2 a 3 frases).",
   "warningSigns": ["Señal 1", "Señal 2", "Señal 3"],
   "recommendations": ["Recomendación 1", "Recomendación 2", "Recomendación 3"],
@@ -267,12 +225,7 @@ REGLAS CRÍTICAS DE CLASIFICACIÓN:
 ${criticalRules.map((t) => `- ${t}`).join("\n")}
 
 CATEGORÍAS FORMALES DE FRAUDE:
-${fraudCategories
-  .map(
-    (category) =>
-      `- ${category.value}: ${category.label}. ${category.description}`,
-  )
-  .join("\n")}
+${fraudCategories.map((category) => `- ${category.value}: ${category.label}. ${category.description}`).join("\n")}
 
 SEÑALES DE RESPALDO O CONFIANZA INSTITUCIONAL:
 ${trustedEntitySignals.map((t) => `- ${t}`).join("\n")}
@@ -287,12 +240,7 @@ REGLAS PARA ANÁLISIS DE ENLACES:
 ${linkAnalysisRules.map((t) => `- ${t}`).join("\n")}
 
 CASOS DE REFERENCIA CONOCIDOS:
-${knownReferenceCases
-  .map(
-    (item) =>
-      `- Dominio: ${item.domain}. Nombre: ${item.name}. Criterio: ${item.guidance}`,
-  )
-  .join("\n")}
+${knownReferenceCases.map((item) => `- Dominio: ${item.domain}. Nombre: ${item.name}. Criterio: ${item.guidance}`).join("\n")}
 
 REGLAS GENERALES:
 1. Nunca acuses legalmente a una persona, empresa o institución específica. Tu análisis es orientativo y preventivo, jamás una sentencia legal ni una afirmación de culpabilidad.

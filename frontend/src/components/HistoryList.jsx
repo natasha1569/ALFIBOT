@@ -1,4 +1,5 @@
 import { normalizeRiskLevel } from '../utils/risk.js';
+import { getFraudCategoryLabel } from '../utils/fraudCategory.js';
 
 const TYPE_LABELS = { text: 'Texto', link: 'Enlace', image: 'Imagen' };
 const TYPE_ICONS = { text: 'bi-card-text', link: 'bi-link-45deg', image: 'bi-image' };
@@ -33,6 +34,7 @@ export default function HistoryList({ items, onClear, isLoading }) {
           <div className="history-list">
             {items.map((item) => {
               const riskLevel = normalizeRiskLevel(item.riskLevel);
+              const fraudCategoryLabel = getFraudCategoryLabel(item.fraudCategory);
               return (
                 <article key={item.id} className={`history-item risk-${riskLevel}`}>
                   <div className="history-item-top">
@@ -43,6 +45,12 @@ export default function HistoryList({ items, onClear, isLoading }) {
                     <span className={`mini-risk-badge risk-${riskLevel}`}>{RISK_LABELS[riskLevel]}</span>
                   </div>
                   {item.inputPreview && <p className="history-preview">“{item.inputPreview}”</p>}
+                  {fraudCategoryLabel && (
+                    <p className="history-summary mb-2">
+                      <i className="bi bi-shield-exclamation me-1"></i>
+                      <strong>{fraudCategoryLabel}</strong>
+                    </p>
+                  )}
                   {item.summary && <p className="history-summary">{item.summary}</p>}
                   <small className="text-secondary">{new Date(item.createdAt).toLocaleString()}</small>
                 </article>
