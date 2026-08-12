@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {
   ImageValidationError,
   buildImageExtractionInput,
+  buildImageRiskContext,
   normalizeImageEvidence,
+  runImageAnalysisPipeline,
   validateImageDataUri,
 } from '../src/services/imageAnalysis.service.js';
 
@@ -77,4 +79,83 @@ test('buildImageExtractionInput conserva la imagen únicamente para el backend',
   assert.equal(input[0].content[1].type, 'input_image');
   assert.equal(input[0].content[1].image_url, dataUri);
   assert.equal(input[0].content[1].detail, 'high');
+});
+
+test('buildImageRiskContext prepara el OCR para la política antifraude', () => {
+  const context = buildImageRiskContext({
+    extractedText: 'Préstamo inmediato solo con cédula',
+    platformContext: 'Facebook Marketplace',
+    contactChannels: ['WhatsApp 0990000000'],
+    financialAmounts: ['$10.000'],
+    institutionalElements: [],
+    visualSignals: ['Perfil de vendedor particular'],
+  });
+
+  assert.match(context, /Préstamo inmediato solo con cédula/);
+  assert.match(context, /Facebook Marketplace/);
+  assert.match(context, /WhatsApp 0990000000/);
+  assert.match(context, /No se detectaron elementos institucionales/);
+  assert.match(context, /imagen original/);
+});
+
+test('runImageAnalysisPipeline ejecuta OCR antes del análisis y expone la evidencia', async () => {
+  const calls = [];
+  const dataUri = createDataUri(
+    'image/jpeg',
+    [0xff, 0xd8, 0xff, 0xe0, 0x00],
+  );
+
+  const result = await runImageAnalysisPipeline({
+    content: dataUri,
+    extractEvidence: async (image) => {
+      calls.push(`ocr:${image.mimeType}`);
+      return {
+        extractedText: 'Invierta hoy y duplique su dinero',
+        visualSignals: ['Promesa destacada de rentabilidad'],
+      };
+    },
+    analyzeEvidence: async ({ evidence, riskContext }) => {
+      calls.push(`risk:${evidence.extractedText}`);
+      assert.match(riskContext, /duplique su dinero/);
+      return {
+        allowed: true,
+        riskLevel: 'alto',
+        summary: 'Se detectó una promesa de ganancia poco realista.',
+      };
+    },
+  });
+
+  assert.deepEqual(calls, [
+    'ocr:image/jpeg',
+    'risk:Invierta hoy y duplique su dinero',
+  ]);
+  assert.equal(result.riskLevel, 'alto');
+  assert.equal(result.extractedText, 'Invierta hoy y duplique su dinero');
+  assert.deepEqual(result.imageEvidence.visualSignals, [
+    'Promesa destacada de rentabilidad',
+  ]);
+});
+
+test('runImageAnalysisPipeline no analiza si la extracción OCR falla', async () => {
+  const dataUri = createDataUri(
+    'image/webp',
+    Buffer.from('RIFF0000WEBP', 'ascii'),
+  );
+  let analyzeWasCalled = false;
+
+  await assert.rejects(
+    runImageAnalysisPipeline({
+      content: dataUri,
+      extractEvidence: async () => {
+        throw new Error('OCR no disponible');
+      },
+      analyzeEvidence: async () => {
+        analyzeWasCalled = true;
+        return {};
+      },
+    }),
+    /OCR no disponible/,
+  );
+
+  assert.equal(analyzeWasCalled, false);
 });

@@ -175,3 +175,69 @@ export function buildImageExtractionInput(dataUri) {
     },
   ];
 }
+
+function formatEvidenceList(items, emptyMessage) {
+  return items.length > 0
+    ? items.map((item) => `- ${item}`).join('\n')
+    : `- ${emptyMessage}`;
+}
+
+export function buildImageRiskContext(rawEvidence) {
+  const evidence = normalizeImageEvidence(rawEvidence);
+
+  return `
+EVIDENCIA EXTRAÍDA DE LA IMAGEN:
+
+TEXTO VISIBLE EXTRAÍDO MEDIANTE OCR:
+"""
+${evidence.extractedText || 'No se detectó texto legible.'}
+"""
+
+CONTEXTO DE PLATAFORMA:
+${evidence.platformContext || 'No se identificó una plataforma específica.'}
+
+CANALES DE CONTACTO VISIBLES:
+${formatEvidenceList(evidence.contactChannels, 'No se detectaron canales de contacto.')}
+
+MONTOS, TASAS, PLAZOS O CUOTAS VISIBLES:
+${formatEvidenceList(evidence.financialAmounts, 'No se detectaron datos financieros legibles.')}
+
+ELEMENTOS INSTITUCIONALES VISIBLES:
+${formatEvidenceList(evidence.institutionalElements, 'No se detectaron elementos institucionales verificables.')}
+
+OTRAS SEÑALES VISUALES OBSERVABLES:
+${formatEvidenceList(evidence.visualSignals, 'No se registraron otras señales visuales.')}
+
+Analiza esta evidencia junto con la imagen original. No inventes texto, entidades, condiciones ni elementos visuales que no estén presentes. Si el OCR no detectó texto, basa el análisis únicamente en los elementos visuales realmente observables.
+  `.trim();
+}
+
+export async function runImageAnalysisPipeline({
+  content,
+  extractEvidence,
+  analyzeEvidence,
+}) {
+  if (typeof extractEvidence !== 'function') {
+    throw new TypeError('La etapa de extracción OCR no está configurada.');
+  }
+
+  if (typeof analyzeEvidence !== 'function') {
+    throw new TypeError('La etapa de análisis de fraude no está configurada.');
+  }
+
+  const image = validateImageDataUri(content);
+  const rawEvidence = await extractEvidence(image);
+  const evidence = normalizeImageEvidence(rawEvidence);
+  const riskContext = buildImageRiskContext(evidence);
+  const result = await analyzeEvidence({ image, evidence, riskContext });
+
+  if (!result || typeof result !== 'object') {
+    throw new Error('La etapa de análisis de fraude no devolvió un resultado válido.');
+  }
+
+  return {
+    ...result,
+    extractedText: evidence.extractedText,
+    imageEvidence: evidence,
+  };
+}
