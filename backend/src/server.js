@@ -10,6 +10,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const diagnosticsEnabled = process.env.ENABLE_DB_DIAGNOSTICS === 'true';
 
 app.use(cors());
 
@@ -26,56 +27,53 @@ app.get('/', (req, res) => {
 
 
 // ======================================================
-// PROBAR CONEXIÓN A POSTGRESQL
+// DIAGNÓSTICOS DE POSTGRESQL
+// Deshabilitados por defecto y protegidos por autenticación.
 // ======================================================
 
-app.get('/api/database/test', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT
-        CURRENT_DATABASE() AS database,
-        CURRENT_USER AS usuario,
-        CURRENT_TIMESTAMP AS fecha
-    `);
+if (diagnosticsEnabled) {
+  app.get('/api/database/test', authMiddleware, async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT
+          CURRENT_DATABASE() AS database,
+          CURRENT_USER AS usuario,
+          CURRENT_TIMESTAMP AS fecha
+      `);
 
-    res.json({
-      connected: true,
-      message: 'PostgreSQL conectado correctamente.',
-      data: result.rows[0],
-    });
-  } catch (error) {
-    console.error(error);
+      res.json({
+        connected: true,
+        message: 'PostgreSQL conectado correctamente.',
+        data: result.rows[0],
+      });
+    } catch (error) {
+      console.error('[database/test]', error.message);
 
-    res.status(500).json({
-      connected: false,
-      message: 'Error al conectar con PostgreSQL.',
-      error: error.message,
-    });
-  }
-});
+      res.status(500).json({
+        connected: false,
+        message: 'Error al conectar con PostgreSQL.',
+      });
+    }
+  });
 
+  app.get('/api/database/analisis', authMiddleware, async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT *
+        FROM alfi.analisis
+        ORDER BY analisis_id DESC
+      `);
 
-// ======================================================
-// CONSULTAR LA TABLA ANALISIS
-// ======================================================
+      res.json(result.rows);
+    } catch (error) {
+      console.error('[database/analisis]', error.message);
 
-app.get('/api/database/analisis', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT *
-      FROM alfi.analisis
-      ORDER BY analisis_id DESC
-    `);
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: error.message,
-    });
-  }
-});
+      res.status(500).json({
+        error: 'No se pudo consultar la información solicitada.',
+      });
+    }
+  });
+}
 
 
 // ======================================================
@@ -117,6 +115,12 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor backend escuchando en http://localhost:${PORT}`);
+
+  if (diagnosticsEnabled) {
+    console.warn(
+      '[security] ENABLE_DB_DIAGNOSTICS=true: endpoints de diagnóstico habilitados.'
+    );
+  }
 
   if (
     !process.env.OPENAI_API_KEY ||
