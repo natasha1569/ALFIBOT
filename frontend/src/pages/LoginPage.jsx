@@ -2,10 +2,59 @@ import { useState } from 'react';
 import { saveAuthSession } from '../auth/authStorage.js';
 import { login, registerUser } from '../services/api.js';
 
+const PROVINCES = [
+  'Azuay',
+  'Bolívar',
+  'Cañar',
+  'Carchi',
+  'Chimborazo',
+  'Cotopaxi',
+  'El Oro',
+  'Esmeraldas',
+  'Galápagos',
+  'Guayas',
+  'Imbabura',
+  'Loja',
+  'Los Ríos',
+  'Manabí',
+  'Morona Santiago',
+  'Napo',
+  'Orellana',
+  'Pastaza',
+  'Pichincha',
+  'Santa Elena',
+  'Santo Domingo de los Tsáchilas',
+  'Sucumbíos',
+  'Tungurahua',
+  'Zamora Chinchipe',
+];
+
+const AGE_RANGES = [
+  '18-24',
+  '25-34',
+  '35-44',
+  '45-54',
+  '55-64',
+  '65+',
+];
+
+const FINANCIAL_INTERESTS = [
+  { code: 'ahorro', label: 'Ahorro' },
+  { code: 'creditos_financiamiento', label: 'Créditos y financiamiento' },
+  { code: 'inversiones', label: 'Inversiones' },
+  { code: 'seguros', label: 'Seguros' },
+  { code: 'emprendimiento', label: 'Emprendimiento' },
+  { code: 'educacion_financiera', label: 'Educación financiera' },
+];
+
 const EMPTY_REGISTRATION = {
   name: '',
   email: '',
   phone: '',
+  province: '',
+  ageRange: '',
+  interests: [],
+  termsAccepted: false,
   password: '',
   confirmPassword: '',
 };
@@ -38,12 +87,25 @@ export default function LoginPage({
   }
 
   function handleRegistrationChange(event) {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
     setRegistration((current) => ({
       ...current,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
+  }
+
+  function handleInterestChange(code) {
+    setRegistration((current) => {
+      const alreadySelected = current.interests.includes(code);
+
+      return {
+        ...current,
+        interests: alreadySelected
+          ? current.interests.filter((interest) => interest !== code)
+          : [...current.interests, code],
+      };
+    });
   }
 
   function changeMode(nextMode) {
@@ -79,6 +141,22 @@ export default function LoginPage({
 
     setError('');
     setSuccessMessage('');
+
+    if (!registration.province || !registration.ageRange) {
+      setError('Selecciona tu provincia y rango de edad.');
+      return;
+    }
+
+    if (registration.interests.length === 0) {
+      setError('Selecciona al menos un interés financiero.');
+      return;
+    }
+
+    if (!registration.termsAccepted) {
+      setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -287,6 +365,82 @@ export default function LoginPage({
               />
             </div>
 
+            <label htmlFor="register-province">
+              Provincia
+            </label>
+
+            <div className="alfi-login-input">
+              <i className="bi bi-geo-alt"></i>
+
+              <select
+                id="register-province"
+                name="province"
+                className="form-select border-0 bg-transparent shadow-none"
+                value={registration.province}
+                onChange={handleRegistrationChange}
+                required
+              >
+                <option value="">Selecciona una provincia</option>
+                {PROVINCES.map((province) => (
+                  <option key={province} value={province}>
+                    {province}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <label htmlFor="register-age-range">
+              Rango de edad
+            </label>
+
+            <div className="alfi-login-input">
+              <i className="bi bi-calendar3"></i>
+
+              <select
+                id="register-age-range"
+                name="ageRange"
+                className="form-select border-0 bg-transparent shadow-none"
+                value={registration.ageRange}
+                onChange={handleRegistrationChange}
+                required
+              >
+                <option value="">Selecciona un rango</option>
+                {AGE_RANGES.map((ageRange) => (
+                  <option key={ageRange} value={ageRange}>
+                    {ageRange}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <fieldset className="border rounded-3 p-3 mb-2">
+              <legend className="float-none w-auto px-2 fs-6 fw-bold mb-1">
+                Intereses financieros
+              </legend>
+
+              <small className="text-secondary d-block mb-2">
+                Selecciona al menos uno.
+              </small>
+
+              <div className="row g-2">
+                {FINANCIAL_INTERESTS.map((interest) => (
+                  <div className="col-12 col-sm-6" key={interest.code}>
+                    <label className="form-check d-flex align-items-center gap-2 m-0">
+                      <input
+                        className="form-check-input m-0"
+                        type="checkbox"
+                        checked={registration.interests.includes(interest.code)}
+                        onChange={() => handleInterestChange(interest.code)}
+                      />
+                      <span className="fw-normal">
+                        {interest.label}
+                      </span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
             <label htmlFor="register-password">
               Contraseña
             </label>
@@ -329,6 +483,41 @@ export default function LoginPage({
                 required
               />
             </div>
+
+            <details className="border rounded-3 p-3 bg-light">
+              <summary className="fw-bold">
+                Ver Términos, Privacidad y uso de datos
+              </summary>
+
+              <div className="small text-secondary mt-2">
+                <p className="mb-2">
+                  ALFI BOT utiliza los datos de registro para crear y proteger tu cuenta,
+                  operar el servicio y elaborar analítica agregada del producto.
+                </p>
+                <p className="mb-0">
+                  Los intereses financieros y datos generales de perfil pueden utilizarse
+                  de forma segmentada para mejorar contenidos y mostrar publicidad relevante
+                  de entidades financieras. ALFI BOT no requiere almacenar saldos, cuentas
+                  bancarias, patrimonio ni historial financiero para este propósito.
+                </p>
+              </div>
+            </details>
+
+            <label className="form-check d-flex align-items-start gap-2 my-2">
+              <input
+                id="register-terms"
+                name="termsAccepted"
+                className="form-check-input mt-1"
+                type="checkbox"
+                checked={registration.termsAccepted}
+                onChange={handleRegistrationChange}
+                required
+              />
+              <span className="fw-normal">
+                Acepto los Términos y Condiciones, la Política de Privacidad y
+                declaro haber leído la información sobre uso de datos y publicidad.
+              </span>
+            </label>
 
             {error && (
               <div
