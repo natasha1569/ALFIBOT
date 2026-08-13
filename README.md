@@ -98,19 +98,23 @@ VITE_REQUEST_TIMEOUT_MS=90000
 
 ## Preparar PostgreSQL
 
-Los scripts versionados actuales son migraciones incrementales y controles de seguridad. Deben ejecutarse sobre una base que ya contenga el esquema `alfi` y las tablas base: `roles`, `usuarios`, `analisis`, `senales_alerta`, `recomendaciones` y `auditoria`.
+## Preparar PostgreSQL
 
-Orden recomendado para una base existente:
+El repositorio incluye `backend/sql/ALFI_BOT_DATABASE.sql`, que funciona como instalador canónico de PostgreSQL para preparar una base de datos vacía con la estructura requerida por ALFI BOT.
 
-1. `backend/sql/AFB-151-rbac.sql` — roles PostgreSQL y mínimo privilegio.
-2. `backend/sql/AFB-311-registro-perfil-comercial.sql` — perfil, términos e intereses.
-3. `backend/sql/AFB-253-reporteria-bi.sql` — categoría de fraude y vistas BI.
-4. `backend/sql/AFB-333-usuarios-accesos.sql` — catálogo final de roles funcionales.
-5. `backend/sql/AFB-371-seguridad.sql` — consultas de verificación de seguridad.
+Para una instalación limpia:
 
-Ejecuta cada archivo por separado con una cuenta propietaria o administrativa autorizada, revisa su salida y conserva evidencia. No uses directamente una cuenta PostgreSQL privilegiada como `DB_USER` del backend.
+1. Crear una base de datos PostgreSQL vacía.
+2. Ejecutar:
 
-> Estado conocido: el repositorio todavía no contiene un instalador completo para construir toda la base desde cero. Ese trabajo está registrado en Jira como AFB-324. No se debe presentar una migración incremental como instalación limpia.
+   `backend/sql/ALFI_BOT_DATABASE.sql`
+
+3. Configurar las variables de conexión del backend en el archivo `.env`.
+4. Ejecutar únicamente las migraciones adicionales de `backend/sql/` que correspondan al estado de la base de datos.
+
+Los scripts `AFB-*.sql` complementan la instalación con funcionalidades desarrolladas durante el proyecto, como roles y permisos, datos de perfil, auditoría, reportería y categoría de fraude.
+
+Por seguridad, el archivo `.env` no debe versionarse ni incluirse en la entrega pública del repositorio.
 
 ## Ejecución local
 
