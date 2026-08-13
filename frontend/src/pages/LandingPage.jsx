@@ -16,7 +16,7 @@ export default function LandingPage({ onStart, onLogin }) {
           <div className="alfi-nav-actions">
             <button
               type="button"
-              className="btn-login"
+              className="landing-login-button"
               onClick={onLogin}
             >
               Iniciar sesión
@@ -24,7 +24,7 @@ export default function LandingPage({ onStart, onLogin }) {
 
             <button
               type="button"
-              className="btn-primary"
+              className="landing-primary-button"
               onClick={onStart}
             >
               Probar ALFI BOT
@@ -34,140 +34,130 @@ export default function LandingPage({ onStart, onLogin }) {
       </header>
 
       <section className="alfi-hero" id="proyecto">
-        <div className="alfi-container hero-grid">
-          <div className="hero-copy">
-            <span className="hero-badge">
+        <div className="alfi-container landing-hero-grid">
+          <div className="landing-hero-copy">
+            <span className="landing-hero-badge">
               <i className="bi bi-shield-check"></i>
-              Aplicación preventiva
+              Aplicación preventiva con inteligencia artificial
             </span>
 
-            <p className="hero-kicker">
+            <p className="landing-hero-kicker">
               ALFI BOT · ALERTAS FINANCIERAS
             </p>
 
-            <h1>
-              Detecta riesgos
-              <span> antes de tomar una decisión.</span>
-            </h1>
+            <h1 className="landing-hero-title">ALFI BOT</h1>
 
-            <p className="hero-description">
-              ALFI BOT analiza textos, enlaces e imágenes para ayudarte a
-              identificar patrones comunes en estafas, créditos falsos e
-              inversiones engañosas.
+            <p className="landing-hero-tagline">
+              Detecta señales de riesgo antes de tomar una decisión
+              financiera.
             </p>
 
-            <p className="hero-description">
-              Recibe un nivel de riesgo claro y recomendaciones preventivas
-              antes de compartir datos o realizar pagos.
+            <p className="landing-hero-description">
+              Analiza textos, enlaces, imágenes y capturas sospechosas para
+              identificar indicios de phishing, suplantación, créditos falsos,
+              inversiones engañosas y otras posibles estafas financieras.
+              Recibe un nivel de riesgo, las señales encontradas y
+              recomendaciones preventivas antes de compartir datos, transferir
+              dinero o aceptar una oferta.
             </p>
 
-            <div className="hero-actions">
+            <div className="landing-hero-actions">
               <button
                 type="button"
-                className="btn-primary btn-large"
+                className="landing-primary-button landing-large-button"
                 onClick={onStart}
               >
                 <i className="bi bi-search"></i>
-                Iniciar Prueba Gratuita
+                Analizar contenido ahora
               </button>
+
+              <a
+                className="landing-secondary-button landing-large-button"
+                href="#como-funciona"
+              >
+                <i className="bi bi-play-circle"></i>
+                Ver cómo funciona
+              </a>
             </div>
 
-            <div className="hero-points">
+            <div
+              className="landing-hero-points"
+              aria-label="Ventajas de ALFI BOT"
+            >
               <span>
                 <i className="bi bi-check-circle-fill"></i>
-                Fácil de usar
+                Texto, enlace o imagen
               </span>
 
               <span>
                 <i className="bi bi-check-circle-fill"></i>
-                Análisis preventivo
+                Nivel de riesgo claro
               </span>
 
               <span>
                 <i className="bi bi-check-circle-fill"></i>
-                Resultados claros
+                Recomendaciones preventivas
               </span>
             </div>
           </div>
 
-          <div className="hero-visual">
-            <div className="risk-card card-top-left">
-              <strong>ANÁLISIS DE RIESGO</strong>
-
-              <div className="mini-chart">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-
-              <p>RIESGO <b>BAJO</b></p>
-              <p>PATRONES <b>12</b></p>
-              <p>AMENAZAS <b>2</b></p>
-            </div>
-
-            <div className="risk-card alert-card">
-              <i className="bi bi-exclamation-triangle-fill"></i>
-              <div>
-                <strong>ALERTA</strong>
-                <span>FINANCIERA</span>
-              </div>
-            </div>
-
-            <div className="risk-card suspicious-card">
-              <i className="bi bi-exclamation-triangle-fill"></i>
-              <div>
-                <strong>PATRÓN</strong>
-                <span>SOSPECHOSO</span>
-              </div>
-            </div>
-
-            <div className="robot-wrapper">
-              <img
-                src="/alfi-robot-mini.png"
-                alt="ALFI BOT saludando"
-                className="hero-robot"
-              />
-            </div>
-
-            <div className="risk-card activity-card">
-              <strong>ACTIVIDAD RECIENTE</strong>
-
-              <div className="bars">
-                <span style={{ height: '35%' }}></span>
-                <span style={{ height: '48%' }}></span>
-                <span style={{ height: '60%' }}></span>
-                <span style={{ height: '78%' }}></span>
-                <span style={{ height: '50%' }}></span>
-                <span style={{ height: '65%' }}></span>
-                <span style={{ height: '88%' }}></span>
-              </div>
-            </div>
-
-            <div className="risk-card meter-card">
-              <strong>NIVEL DE RIESGO</strong>
-
-              <div className="risk-meter">
-                <div className="needle"></div>
-              </div>
-
-              <b>BAJO</b>
-            </div>
-
-            <div className="risk-card threats-card">
-              <strong>TIPOS DE AMENAZAS</strong>
-
-              <p>Phishing <span>35%</span></p>
-              <p>Créditos falsos <span>25%</span></p>
-              <p>Inversiones <span>20%</span></p>
-              <p>Suplantación <span>10%</span></p>
-            </div>
-
-            <div className="risk-card protected-card">
+          <figure className="landing-hero-artwork">
+            <img
+              src="/alfi-finance-hero.png"
+              alt="Elfiboy, asistente de ALFI BOT, junto a paneles de análisis de riesgo y alertas financieras"
+              className="landing-hero-image"
+            />
+            <figcaption>
               <i className="bi bi-shield-check"></i>
-              <span>SISTEMA PROTEGIDO</span>
-            </div>
+              Elfiboy te ayuda a analizar antes de confiar.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section className="landing-process-section" id="como-funciona">
+        <div className="alfi-container">
+          <div className="landing-section-heading">
+            <span>CÓMO FUNCIONA</span>
+            <h2>Una alerta clara en tres pasos</h2>
+            <p>
+              ALFI BOT ofrece orientación preventiva para ayudarte a verificar
+              una oferta financiera antes de actuar.
+            </p>
+          </div>
+
+          <div className="landing-process-grid">
+            <article>
+              <span className="landing-step-icon">
+                <i className="bi bi-file-earmark-arrow-up"></i>
+              </span>
+              <div>
+                <strong>1. Ingresa el contenido</strong>
+                <p>Escribe un texto, pega un enlace o carga una captura.</p>
+              </div>
+            </article>
+
+            <article>
+              <span className="landing-step-icon">
+                <i className="bi bi-cpu"></i>
+              </span>
+              <div>
+                <strong>2. ALFI BOT analiza</strong>
+                <p>
+                  Busca patrones y señales frecuentes de fraude financiero.
+                </p>
+              </div>
+            </article>
+
+            <article>
+              <span className="landing-step-icon">
+                <i className="bi bi-shield-exclamation"></i>
+              </span>
+              <div>
+                <strong>3. Revisa la alerta</strong>
+                <p>Consulta el nivel de riesgo y las recomendaciones.</p>
+              </div>
+            </article>
           </div>
         </div>
       </section>
