@@ -1,25 +1,30 @@
+import { useState } from 'react';
 import FraudTrendsDashboard from '../components/FraudTrendsDashboard.jsx';
 import AdminManagement from '../components/AdminManagement.jsx';
+import AuditTrailPanel from '../components/AuditTrailPanel.jsx';
 
 const PORTAL_CONFIG = {
   administrador: {
     kicker: 'Administración',
     title: 'Panel administrativo',
     copy: 'Gestión protegida de usuarios y accesos de ALFI BOT sobre la matriz RBAC vigente.',
+    defaultSection: 'users',
     cards: [
-      ['bi-people', 'Usuarios', 'Administrar roles y estado de las cuentas.'],
-      ['bi-bar-chart', 'Reportería', 'Consultar tendencias agregadas de ALFI BOT.'],
-      ['bi-database-check', 'Diagnóstico', 'Acceso restringido a controles técnicos.'],
+      { section: 'users', icon: 'bi-people', title: 'Usuarios', copy: 'Administrar roles y estado de las cuentas.' },
+      { section: 'reporting', icon: 'bi-bar-chart', title: 'Reportería BI', copy: 'Consultar distribuciones agregadas y gráficos.' },
+      { section: 'audit', icon: 'bi-clipboard-data', title: 'Auditoría', copy: 'Revisar trazabilidad técnica autorizada.' },
+      { section: 'trends', icon: 'bi-graph-up', title: 'Tendencias', copy: 'Analizar la evolución mensual de los análisis.' },
     ],
   },
   auditor: {
     kicker: 'Auditoría',
     title: 'Centro de auditoría',
     copy: 'Espacio de consulta sin funciones administrativas sobre usuarios o control de accesos.',
+    defaultSection: 'reporting',
     cards: [
-      ['bi-bar-chart', 'Reportería BI', 'Consultar patrones agregados por riesgo y categoría.'],
-      ['bi-clipboard-data', 'Auditoría', 'Revisar trazabilidad técnica y actividad autorizada.'],
-      ['bi-graph-up', 'Tendencias', 'Analizar evolución por periodo y tipo de contenido.'],
+      { section: 'reporting', icon: 'bi-bar-chart', title: 'Reportería BI', copy: 'Consultar patrones y gráficos agregados por riesgo y contenido.' },
+      { section: 'audit', icon: 'bi-clipboard-data', title: 'Auditoría', copy: 'Revisar trazabilidad técnica y actividad autorizada.' },
+      { section: 'trends', icon: 'bi-graph-up', title: 'Tendencias', copy: 'Analizar evolución por periodo y tipo de contenido.' },
     ],
   },
 };
@@ -29,6 +34,16 @@ export default function RolePortal({
   onLogout,
 }) {
   const portal = PORTAL_CONFIG[user.role];
+  const [activeSection, setActiveSection] = useState(portal.defaultSection);
+
+  const openSection = (section) => {
+    setActiveSection(section);
+    window.setTimeout(() => {
+      document
+        .getElementById(`portal-${section}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  };
 
   return (
     <main className="container py-5">
@@ -55,24 +70,45 @@ export default function RolePortal({
       </div>
 
       <div className="row g-4">
-        {portal.cards.map(([icon, title, copy]) => (
-          <div className="col-12 col-md-6" key={title}>
-            <article className="card border-0 shadow-sm h-100">
-              <div className="card-body p-4">
+        {portal.cards.map(({ section, icon, title, copy }) => (
+          <div className="col-12 col-md-6" key={section}>
+            <button
+              className={`card border-0 shadow-sm h-100 w-100 text-start portal-card-button ${activeSection === section ? 'active' : ''}`}
+              type="button"
+              onClick={() => openSection(section)}
+              aria-pressed={activeSection === section}
+              aria-controls={`portal-${section}`}
+            >
+              <span className="card-body p-4 d-block">
                 <i className={`bi ${icon} fs-2`}></i>
-                <h2 className="h5 mt-3">{title}</h2>
-                <p className="text-secondary mb-0">{copy}</p>
-              </div>
-            </article>
+                <span className="h5 mt-3 d-block">{title}</span>
+                <span className="text-secondary d-block">{copy}</span>
+                <span className="portal-card-action mt-3">
+                  Abrir sección <i className="bi bi-arrow-right ms-1"></i>
+                </span>
+              </span>
+            </button>
           </div>
         ))}
       </div>
 
-      {user.role === 'administrador' && (
-        <AdminManagement currentUser={user} />
-      )}
+      <div className="portal-section mt-5" id={`portal-${activeSection}`} tabIndex="-1">
+        {activeSection === 'users' && user.role === 'administrador' && (
+          <AdminManagement currentUser={user} />
+        )}
 
-      <FraudTrendsDashboard />
+        {activeSection === 'reporting' && (
+          <FraudTrendsDashboard mode="reporting" />
+        )}
+
+        {activeSection === 'audit' && (
+          <AuditTrailPanel />
+        )}
+
+        {activeSection === 'trends' && (
+          <FraudTrendsDashboard mode="trends" />
+        )}
+      </div>
     </main>
   );
 }

@@ -237,6 +237,121 @@ textarea {
   font-weight: 800;
 }
 
+.portal-card-button {
+  appearance: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.94);
+  transition: transform 160ms ease, box-shadow 160ms ease, outline-color 160ms ease;
+}
+
+.portal-card-button:hover,
+.portal-card-button:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.13) !important;
+}
+
+.portal-card-button.active {
+  outline: 3px solid rgba(37, 99, 235, 0.22);
+  background: linear-gradient(145deg, #ffffff, #eef5ff);
+}
+
+.portal-card-action {
+  display: inline-flex;
+  align-items: center;
+  color: var(--app-blue);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.portal-section {
+  scroll-margin-top: 1rem;
+}
+
+.report-stat-card,
+.report-chart-panel {
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.report-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.report-bars {
+  display: grid;
+  gap: 1rem;
+}
+
+.report-bar-row {
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.report-bar-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.report-bar-track span {
+  display: block;
+  min-width: 4px;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 240ms ease;
+}
+
+.report-line-panel {
+  padding: 1.25rem;
+}
+
+.report-line-chart {
+  overflow-x: auto;
+}
+
+.report-line-chart svg {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  min-height: 240px;
+}
+
+.report-grid-line {
+  stroke: #dbe3ee;
+  stroke-width: 1;
+}
+
+.report-trend-line {
+  fill: none;
+  stroke: var(--app-blue);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.report-trend-point {
+  fill: #ffffff;
+  stroke: var(--app-blue);
+  stroke-width: 4;
+}
+
+.report-axis-label {
+  fill: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 767.98px) {
+  .report-chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .risk-tabs {
   display: inline-flex;
   gap: 0.4rem;
