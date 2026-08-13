@@ -33,12 +33,8 @@ export const ROLE_PERMISSIONS = Object.freeze({
   ]),
 });
 
-export function roleHasPermission(role, permission) {
-  return Boolean(
-    ROLE_PERMISSIONS[role]?.includes(permission),
-  );
-}
+export const roleHasPermission = (role, permission) => Boolean(
+  ROLE_PERMISSIONS[role]?.includes(permission),
+);
 
-export function isKnownRole(role) {
-  return ALL_APP_ROLES.includes(role);
-}
+export const isKnownRole = (role) => ALL_APP_ROLES.includes(role);

@@ -1,7 +1,7 @@
 import { verifyAuthToken } from '../services/token.service.js';
 import { isKnownRole } from '../config/permissions.js';
 
-export default function authMiddleware(req, res, next) {
+const authMiddleware = (req, res, next) => {
   const authorization = req.headers.authorization || '';
 
   if (!authorization.startsWith('Bearer ')) {
@@ -23,4 +23,6 @@ export default function authMiddleware(req, res, next) {
   } catch {
     return res.status(401).json({ error: 'La sesión es inválida o ha expirado.' });
   }
-}
+};
+
+export default authMiddleware;

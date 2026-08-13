@@ -13,7 +13,7 @@ import RolePortal from './pages/RolePortal.jsx';
 
 import './App.css';
 
-export default function App() {
+const App = () => {
   const [activeUser, setActiveUser] = useState(() =>
     getAuthToken() ? getAuthUser() : null,
   );
@@ -29,9 +29,9 @@ export default function App() {
   };
 
   useEffect(() => {
-    function refreshSession() {
+    const refreshSession = () => {
       setActiveUser(getAuthToken() ? getAuthUser() : null);
-    }
+    };
 
     window.addEventListener('alfi-auth-change', refreshSession);
     const handlePopState = () => setPathname(window.location.pathname);
@@ -43,19 +43,19 @@ export default function App() {
     };
   }, []);
 
-  function handleLogout() {
+  const handleLogout = () => {
     clearAuthSession();
     setActiveUser(null);
     setPublicView('landing');
     navigate('/');
-  }
+  };
 
-  function openLogin(mode = 'login') {
+  const openLogin = (mode = 'login') => {
     setAuthMode(mode);
     setPublicView('auth');
-  }
+  };
 
-  function handleLogin(user) {
+  const handleLogin = (user) => {
     setActiveUser(user);
     const destination = {
       administrador: '/admin',
@@ -63,7 +63,7 @@ export default function App() {
       usuario: '/app',
     }[user.role] || '/';
     navigate(destination);
-  }
+  };
 
   // Si no hay usuario autenticado
   if (!activeUser) {
@@ -169,4 +169,6 @@ export default function App() {
       <Home />
     </>
   );
-}
+};
+
+export default App;

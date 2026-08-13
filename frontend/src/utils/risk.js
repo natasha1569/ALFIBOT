@@ -1,4 +1,4 @@
-export function normalizeRiskLevel(value) {
+export const normalizeRiskLevel = (value) => {
   const normalized = String(value || '').toLowerCase().trim();
 
   if (normalized.includes('alto') || normalized.includes('high')) return 'alto';
@@ -6,9 +6,9 @@ export function normalizeRiskLevel(value) {
   if (normalized.includes('bajo') || normalized.includes('low')) return 'bajo';
 
   return 'medio';
-}
+};
 
-export function getAssistantState({ isAnalyzing, error, result }) {
+export const getAssistantState = ({ isAnalyzing, error, result }) => {
   if (isAnalyzing) return 'analyzing';
   if (error) return 'error';
   if (result?.allowed === false) return 'out-of-scope';
@@ -16,4 +16,4 @@ export function getAssistantState({ isAnalyzing, error, result }) {
 
   const riskLevel = normalizeRiskLevel(result.riskLevel);
   return riskLevel === 'bajo' ? 'low' : riskLevel === 'alto' ? 'high' : 'medium';
-}
+};
