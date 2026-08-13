@@ -4,8 +4,16 @@ import AnalysisForm from "../components/AnalysisForm.jsx";
 import HistoryList from "../components/HistoryList.jsx";
 import ResultCard from "../components/ResultCard.jsx";
 import ShareModal from "../components/ShareModal.jsx";
-import { analyzeContent, clearHistory, fetchHistory } from "../services/api.js";
-import { copyShareSummary, downloadReportPdf, openWhatsappWeb } from "../services/shareReport.service.js";
+import {
+  analyzeContent,
+  clearHistory,
+  fetchHistory,
+} from "../services/api.js";
+import {
+  copyShareSummary,
+  downloadReportPdf,
+  openWhatsappWeb,
+} from "../services/shareReport.service.js";
 import { getAssistantState } from "../utils/risk.js";
 import { normalizeHistoryItems } from "../utils/history.js";
 import {
@@ -29,16 +37,19 @@ export default function Home() {
   const [isSharing, setIsSharing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [availableVoices, setAvailableVoices] = useState([]);
+
   const [selectedVoiceURI, setSelectedVoiceURI] = useState(() => {
     if (typeof window === "undefined") return "";
     return window.localStorage.getItem(VOICE_STORAGE_KEY) || "";
   });
+
   const resultSectionRef = useRef(null);
   const resultScrollTimerRef = useRef(null);
   const speechRequestRef = useRef(0);
 
   const loadHistory = useCallback(async () => {
     setIsHistoryLoading(true);
+
     try {
       const data = await fetchHistory();
       setHistory(normalizeHistoryItems(data));
@@ -61,10 +72,17 @@ export default function Home() {
     };
 
     loadVoices();
-    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+
+    window.speechSynthesis.addEventListener(
+      "voiceschanged",
+      loadVoices,
+    );
 
     return () => {
-      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+      window.speechSynthesis.removeEventListener(
+        "voiceschanged",
+        loadVoices,
+      );
     };
   }, []);
 
@@ -76,7 +94,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!result || !isSpeechSynthesisSupported()) return undefined;
+    if (!result || !isSpeechSynthesisSupported()) {
+      return undefined;
+    }
 
     const voiceTimer = window.setTimeout(() => {
       speakAnalysisResult(result);
@@ -94,10 +114,12 @@ export default function Home() {
 
     resultScrollTimerRef.current = window.setTimeout(() => {
       resultSectionRef.current?.scrollIntoView({
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-          ? 'auto'
-          : 'smooth',
-        block: 'start',
+        behavior: window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches
+          ? "auto"
+          : "smooth",
+        block: "start",
       });
     }, 3500);
 
@@ -116,13 +138,16 @@ export default function Home() {
 
   function speakAnalysisResult(resultToSpeak) {
     const speechText = buildAnalysisSpeech(resultToSpeak);
+
     if (!speechText) return;
 
     const requestId = speechRequestRef.current + 1;
     speechRequestRef.current = requestId;
 
     const updateSpeaking = (value) => {
-      if (speechRequestRef.current === requestId) setIsSpeaking(value);
+      if (speechRequestRef.current === requestId) {
+        setIsSpeaking(value);
+      }
     };
 
     const started = speakText(speechText, {
@@ -132,7 +157,9 @@ export default function Home() {
       onError: () => updateSpeaking(false),
     });
 
-    if (!started) updateSpeaking(false);
+    if (!started) {
+      updateSpeaking(false);
+    }
   }
 
   function handleSpeakResult(resultToSpeak) {
@@ -146,11 +173,15 @@ export default function Home() {
 
   function handleVoiceChange(event) {
     const nextVoiceURI = event.target.value;
+
     stopVoiceResponse();
     setSelectedVoiceURI(nextVoiceURI);
 
     if (nextVoiceURI) {
-      window.localStorage.setItem(VOICE_STORAGE_KEY, nextVoiceURI);
+      window.localStorage.setItem(
+        VOICE_STORAGE_KEY,
+        nextVoiceURI,
+      );
     } else {
       window.localStorage.removeItem(VOICE_STORAGE_KEY);
     }
@@ -166,7 +197,9 @@ export default function Home() {
     speechRequestRef.current = requestId;
 
     const updateSpeaking = (value) => {
-      if (speechRequestRef.current === requestId) setIsSpeaking(value);
+      if (speechRequestRef.current === requestId) {
+        setIsSpeaking(value);
+      }
     };
 
     speakText(
@@ -182,39 +215,63 @@ export default function Home() {
 
   async function handleAnalyze(type, content) {
     stopVoiceResponse();
+
     setIsAnalyzing(true);
     setError("");
     setFeedback("");
     setResult(null);
 
     try {
-      const data = await analyzeContent({ type, content });
+      const data = await analyzeContent({
+        type,
+        content,
+      });
+
       const enrichedResult = data?.allowed
         ? {
             ...data,
-            source: { type, content },
+            source: {
+              type,
+              content,
+            },
             sharedAt: new Date().toISOString(),
           }
         : data;
+
       setResult(enrichedResult);
-      if (data.allowed) loadHistory();
+
+      if (data.allowed) {
+        loadHistory();
+      }
     } catch (err) {
       const errorMessage =
         err.message ||
         "No se pudo completar el análisis. Revisa que el backend esté corriendo.";
+
       setError(errorMessage);
+
       const requestId = speechRequestRef.current + 1;
       speechRequestRef.current = requestId;
+
       speakText(`ALFI BOT informa: ${errorMessage}`, {
         voiceURI: selectedVoiceURI,
+
         onStart: () => {
-          if (speechRequestRef.current === requestId) setIsSpeaking(true);
+          if (speechRequestRef.current === requestId) {
+            setIsSpeaking(true);
+          }
         },
+
         onEnd: () => {
-          if (speechRequestRef.current === requestId) setIsSpeaking(false);
+          if (speechRequestRef.current === requestId) {
+            setIsSpeaking(false);
+          }
         },
+
         onError: () => {
-          if (speechRequestRef.current === requestId) setIsSpeaking(false);
+          if (speechRequestRef.current === requestId) {
+            setIsSpeaking(false);
+          }
         },
       });
     } finally {
@@ -227,7 +284,9 @@ export default function Home() {
       await clearHistory();
       setHistory([]);
     } catch (err) {
-      setError(err.message || "No se pudo borrar el historial.");
+      setError(
+        err.message || "No se pudo borrar el historial.",
+      );
     }
   }
 
@@ -241,16 +300,23 @@ export default function Home() {
 
     setIsSharing(true);
     setFeedback("");
+
     try {
-      const resultInfo = await downloadReportPdf(shareResult);
+      const resultInfo =
+        await downloadReportPdf(shareResult);
+
       setFeedback(
         resultInfo.mode === "pdf"
           ? "Informe PDF generado correctamente."
           : "No se pudo descargar automáticamente. Se abrió una vista para guardar como PDF desde el navegador.",
       );
+
       setTimeout(() => setFeedback(""), 3500);
     } catch (err) {
-      setFeedback(err.message || "No se pudo generar el informe PDF.");
+      setFeedback(
+        err.message ||
+          "No se pudo generar el informe PDF.",
+      );
     } finally {
       setIsSharing(false);
     }
@@ -259,20 +325,39 @@ export default function Home() {
   async function handleWhatsappShare() {
     if (!shareResult) return;
 
-    const whatsappWindow = window.open("about:blank", "_blank");
+    const whatsappWindow = window.open(
+      "about:blank",
+      "_blank",
+    );
+
     setIsSharing(true);
     setFeedback("");
 
     try {
-      openWhatsappWeb(shareResult, whatsappWindow);
+      openWhatsappWeb(
+        shareResult,
+        whatsappWindow,
+      );
+
       setFeedback(
         "Se abrió WhatsApp Web con el informe preventivo listo para enviar.",
       );
+
       setShareResult(null);
+
       setTimeout(() => setFeedback(""), 3500);
     } catch (err) {
-      if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
-      setFeedback(err.message || "No se pudo abrir WhatsApp Web.");
+      if (
+        whatsappWindow &&
+        !whatsappWindow.closed
+      ) {
+        whatsappWindow.close();
+      }
+
+      setFeedback(
+        err.message ||
+          "No se pudo abrir WhatsApp Web.",
+      );
     } finally {
       setIsSharing(false);
     }
@@ -283,55 +368,78 @@ export default function Home() {
 
     setIsSharing(true);
     setFeedback("");
+
     try {
       await copyShareSummary(shareResult);
-      setFeedback("Resumen preventivo copiado con formato ordenado.");
+
+      setFeedback(
+        "Resumen preventivo copiado con formato ordenado.",
+      );
+
       setShareResult(null);
+
       setTimeout(() => setFeedback(""), 3000);
     } catch {
-      setFeedback("No se pudo copiar automáticamente. Revisa permisos del navegador.");
+      setFeedback(
+        "No se pudo copiar automáticamente. Revisa permisos del navegador.",
+      );
     } finally {
       setIsSharing(false);
     }
   }
 
-  const assistantState = getAssistantState({ isAnalyzing, error, result });
+  const assistantState = getAssistantState({
+    isAnalyzing,
+    error,
+    result,
+  });
 
   return (
     <div className="app-shell">
-      <main id="analizador" className="container pb-5 main-grid">
-        <div className="app-section-heading">
-          <p className="section-kicker mb-1">Herramienta principal</p>
-          <h2>Verifica el contenido con la ayuda de ALFI BOT</h2>
-          <p>
-            El robot te acompaña durante el análisis y cambia su señal visual
-            según el resultado real.
-          </p>
-        </div>
-
+      <main
+        id="analizador"
+        className="container pb-5 main-grid"
+      >
         <section
           className={`analysis-workspace assistant-${assistantState}`}
           aria-label="Espacio de análisis"
         >
           <div className="assistant-form-dock">
             <div className="assistant-visual-dock">
-              <AlfiAssistant status={assistantState} />
+              <AlfiAssistant
+                status={assistantState}
+              />
             </div>
 
             <div className="assistant-chat-shell">
-              <AnalysisForm onAnalyze={handleAnalyze} isLoading={isAnalyzing} />
+              <AnalysisForm
+                onAnalyze={handleAnalyze}
+                isLoading={isAnalyzing}
+              />
 
-              <div className="voice-picker-panel" aria-label="Configuración de voz de ALFI BOT">
+              <div
+                className="voice-picker-panel"
+                aria-label="Configuración de voz de ALFI BOT"
+              >
                 <div className="voice-picker-copy">
-                  <span className="voice-picker-icon" aria-hidden="true">
+                  <span
+                    className="voice-picker-icon"
+                    aria-hidden="true"
+                  >
                     <i className="bi bi-soundwave"></i>
                   </span>
+
                   <div>
-                    <label className="voice-picker-label" htmlFor="alfi-voice-selector">
+                    <label
+                      className="voice-picker-label"
+                      htmlFor="alfi-voice-selector"
+                    >
                       Voz de ALFI BOT
                     </label>
+
                     <small>
-                      Escoge una voz disponible en tu navegador y equipo.
+                      Escoge una voz disponible en tu
+                      navegador y equipo.
                     </small>
                   </div>
                 </div>
@@ -345,26 +453,52 @@ export default function Home() {
                       onChange={handleVoiceChange}
                       aria-label="Seleccionar voz de ALFI BOT"
                     >
-                      <option value="">Automática — español</option>
-                      {availableVoices.map((voice) => (
-                        <option key={voice.voiceURI} value={voice.voiceURI}>
-                          {voice.name} — {voice.lang}
-                          {voice.default ? " (predeterminada)" : ""}
-                        </option>
-                      ))}
+                      <option value="">
+                        Automática — español
+                      </option>
+
+                      {availableVoices.map(
+                        (voice) => (
+                          <option
+                            key={voice.voiceURI}
+                            value={voice.voiceURI}
+                          >
+                            {voice.name} —{" "}
+                            {voice.lang}
+                            {voice.default
+                              ? " (predeterminada)"
+                              : ""}
+                          </option>
+                        ),
+                      )}
                     </select>
+
                     <button
                       type="button"
-                      className={`btn btn-outline-primary voice-test-button ${isSpeaking ? "is-speaking" : ""}`}
+                      className={`btn btn-outline-primary voice-test-button ${
+                        isSpeaking
+                          ? "is-speaking"
+                          : ""
+                      }`}
                       onClick={handleTestVoice}
                     >
-                      <i className={`bi ${isSpeaking ? "bi-stop-circle-fill" : "bi-play-circle-fill"} me-2`}></i>
-                      {isSpeaking ? "Detener" : "Probar voz"}
+                      <i
+                        className={`bi ${
+                          isSpeaking
+                            ? "bi-stop-circle-fill"
+                            : "bi-play-circle-fill"
+                        } me-2`}
+                      ></i>
+
+                      {isSpeaking
+                        ? "Detener"
+                        : "Probar voz"}
                     </button>
                   </div>
                 ) : (
                   <span className="voice-unsupported">
-                    La selección de voz no está disponible en este navegador.
+                    La selección de voz no está
+                    disponible en este navegador.
                   </span>
                 )}
               </div>
@@ -378,6 +512,7 @@ export default function Home() {
                   <div>{error}</div>
                 </div>
               )}
+
               {feedback && (
                 <div
                   className="alert alert-success d-flex gap-2 align-items-start mt-3 shadow-sm"
@@ -404,29 +539,48 @@ export default function Home() {
                 onShare={handleShare}
                 onSpeak={handleSpeakResult}
                 isSpeaking={isSpeaking}
-                speechSupported={isSpeechSynthesisSupported()}
+                speechSupported={
+                  isSpeechSynthesisSupported()
+                }
               />
-              {!result && !isAnalyzing && !error && (
-                <div className="result-placeholder">
-                  <span>
-                    <i className="bi bi-activity"></i>
-                  </span>
-                  <div>
-                    <strong>El resultado aparecerá aquí</strong>
-                    <p>
-                      ALFI BOT mostrará el semáforo, las señales detectadas y
-                      las recomendaciones.
-                    </p>
+
+              {!result &&
+                !isAnalyzing &&
+                !error && (
+                  <div className="result-placeholder">
+                    <span>
+                      <i className="bi bi-activity"></i>
+                    </span>
+
+                    <div>
+                      <strong>
+                        El resultado aparecerá aquí
+                      </strong>
+
+                      <p>
+                        ALFI BOT mostrará el
+                        semáforo, las señales
+                        detectadas y las
+                        recomendaciones.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
               {isAnalyzing && (
-                <div className="analysis-loading result-loading" role="status">
+                <div
+                  className="analysis-loading result-loading"
+                  role="status"
+                >
                   <div
                     className="spinner-border spinner-border-sm"
                     aria-hidden="true"
                   ></div>
-                  <span>Preparando el resultado del análisis…</span>
+
+                  <span>
+                    Preparando el resultado del
+                    análisis…
+                  </span>
                 </div>
               )}
             </div>
@@ -436,17 +590,25 @@ export default function Home() {
                 <HistoryList
                   items={history}
                   onClear={handleClearHistory}
-                  isLoading={isHistoryLoading}
+                  isLoading={
+                    isHistoryLoading
+                  }
                 />
+
                 <div className="academic-note card border-0 shadow-sm mt-4">
                   <div className="card-body p-4">
                     <h2 className="h6 fw-bold">
-                      <i className="bi bi-mortarboard me-2"></i>MVP académico
+                      <i className="bi bi-mortarboard me-2"></i>
+                      MVP académico
                     </h2>
+
                     <p className="mb-0 text-secondary">
-                      El análisis es orientativo y no constituye una acusación
-                      legal, financiera o institucional. Verifica siempre la
-                      información en fuentes oficiales.
+                      El análisis es orientativo y
+                      no constituye una acusación
+                      legal, financiera o
+                      institucional. Verifica
+                      siempre la información en
+                      fuentes oficiales.
                     </p>
                   </div>
                 </div>
@@ -460,7 +622,9 @@ export default function Home() {
         result={shareResult}
         isWorking={isSharing}
         onClose={() => {
-          if (!isSharing) setShareResult(null);
+          if (!isSharing) {
+            setShareResult(null);
+          }
         }}
         onWhatsapp={handleWhatsappShare}
         onDownloadPdf={handleDownloadPdf}
