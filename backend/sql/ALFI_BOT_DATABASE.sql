@@ -932,7 +932,7 @@ SELECT
 FROM alfi.roles
 ORDER BY rol_id;
 
-SELECT
+SELECT 
     rolname,
     rolcanlogin,
     rolsuper,
