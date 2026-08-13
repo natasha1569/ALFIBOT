@@ -1,31 +1,36 @@
 # SQL de ALFI BOT
 
-Este directorio concentra scripts SQL versionados del proyecto.
+Este directorio contiene el instalador canónico de PostgreSQL y scripts históricos/especializados del proyecto.
 
-## Estado actual
+## Instalación oficial — T-22 / AFB-318
 
-Los instaladores SQL históricos fueron retirados del repositorio para evitar ejecutar por error scripts obsoletos o destructivos sobre una base existente.
+Para una instalación nueva, el único archivo que debe ejecutarse manualmente en pgAdmin Query Tool es:
 
-No se debe asumir que existe un instalador completo vigente en este directorio.
+`ALFI_BOT_DATABASE.sql`
+
+Flujo recomendado para cada integrante del equipo:
+
+1. Clonar el repositorio.
+2. Ejecutar `npm install` en `backend` y `frontend`.
+3. Crear una base PostgreSQL vacía, por ejemplo `alfi_bot_db`.
+4. Abrir Query Tool conectado a esa base con un usuario PostgreSQL administrador.
+5. Abrir `backend/sql/ALFI_BOT_DATABASE.sql`.
+6. Ejecutar el archivo completo.
+7. Configurar `backend/.env` para apuntar a la base creada.
+8. Ejecutar `npm run dev` en backend.
+9. Ejecutar `npm run dev` en frontend.
+
+El instalador crea el esquema `alfi`, tablas, restricciones, índices, datos semilla indispensables, funciones, triggers de auditoría, vistas BI y roles PostgreSQL RBAC. También incorpora de forma idempotente las ampliaciones conocidas del modelo para una instalación existente, sin eliminar datos de negocio.
+
+No se almacenan contraseñas ni secretos en SQL versionado y no se crean cuentas PostgreSQL `LOGIN`.
+
+## Scripts históricos y especializados
+
+Los archivos `AFB-*.sql` se conservan como trazabilidad de actividades y migraciones anteriores. No son necesarios para una instalación limpia cuando se utiliza `ALFI_BOT_DATABASE.sql`.
 
 ## Seguridad — AFB-371
 
-`AFB-371-seguridad.sql` consolida consultas de verificación y bloques de referencia del Plan de Políticas de Seguridad en Bases de Datos.
-
-El archivo está diseñado para:
-
-- inspeccionar el estado real de PostgreSQL sin eliminar datos;
-- verificar roles, privilegios, triggers y metadatos de auditoría;
-- dejar señalados los bloques pendientes de AFB-151 y AFB-189;
-- servir como punto único para incorporar los controles definitivos cuando esas tareas se completen.
-
-### Importante
-
-Los bloques marcados como `PENDIENTE` no se ejecutan automáticamente. No deben activarse hasta validar la estructura real de la base y completar las tareas Jira correspondientes.
-
-No se almacenan contraseñas ni secretos en SQL versionado.
-
-## Documentación de evidencia
+`AFB-371-seguridad.sql` conserva consultas de inspección y evidencia del Plan de Políticas de Seguridad en Bases de Datos. No reemplaza al instalador canónico.
 
 La matriz de evidencia relacionada se encuentra en:
 
