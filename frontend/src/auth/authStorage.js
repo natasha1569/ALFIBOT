@@ -1,5 +1,6 @@
 const AUTH_TOKEN_KEY = 'alfiAuthToken';
 const AUTH_USER_KEY = 'alfiAuthUser';
+const REMEMBERED_EMAIL_KEY = 'alfiRememberedEmail';
 
 export const getAuthToken = () => localStorage.getItem(AUTH_TOKEN_KEY);
 
@@ -13,6 +14,27 @@ export const getAuthUser = () => {
     localStorage.removeItem(AUTH_USER_KEY);
     return null;
   }
+};
+
+export const getRememberedEmail = () => (
+  localStorage.getItem(REMEMBERED_EMAIL_KEY) || ''
+);
+
+export const saveRememberedEmail = (email) => {
+  const normalizedEmail = typeof email === 'string'
+    ? email.trim().toLowerCase()
+    : '';
+
+  if (!normalizedEmail) {
+    localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+    return;
+  }
+
+  localStorage.setItem(REMEMBERED_EMAIL_KEY, normalizedEmail);
+};
+
+export const clearRememberedEmail = () => {
+  localStorage.removeItem(REMEMBERED_EMAIL_KEY);
 };
 
 export const saveAuthSession = ({ token, user }) => {
