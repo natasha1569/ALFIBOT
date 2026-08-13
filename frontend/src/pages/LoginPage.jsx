@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { saveAuthSession } from '../auth/authStorage.js';
+import {
+  clearRememberedEmail,
+  getRememberedEmail,
+  saveAuthSession,
+  saveRememberedEmail,
+} from '../auth/authStorage.js';
 import { login, registerUser } from '../services/api.js';
 
 const PROVINCES = [
@@ -65,9 +70,13 @@ export default function LoginPage({
   initialMode = 'login',
 }) {
   const [mode, setMode] = useState(initialMode);
+  const rememberedEmail = getRememberedEmail();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberEmail, setRememberEmail] = useState(Boolean(rememberedEmail));
 
   const [credentials, setCredentials] = useState({
-    email: '',
+    email: rememberedEmail,
     password: '',
   });
 
@@ -84,6 +93,16 @@ export default function LoginPage({
       ...current,
       [name]: value,
     }));
+  }
+
+  function handleRememberEmailChange(event) {
+    const { checked } = event.target;
+
+    setRememberEmail(checked);
+
+    if (!checked) {
+      clearRememberedEmail();
+    }
   }
 
   function handleRegistrationChange(event) {
@@ -123,6 +142,12 @@ export default function LoginPage({
 
     try {
       const session = await login(credentials);
+
+      if (rememberEmail) {
+        saveRememberedEmail(credentials.email);
+      } else {
+        clearRememberedEmail();
+      }
 
       saveAuthSession(session);
 
@@ -252,14 +277,34 @@ export default function LoginPage({
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={credentials.password}
                 onChange={handleChange}
                 autoComplete="current-password"
                 minLength={8}
                 required
               />
+
+              <button
+                className="btn btn-link text-secondary p-0 border-0"
+                type="button"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              >
+                <i className={showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'}></i>
+              </button>
             </div>
+
+            <label className="form-check d-flex align-items-center gap-2 m-0 fw-normal">
+              <input
+                className="form-check-input m-0"
+                type="checkbox"
+                checked={rememberEmail}
+                onChange={handleRememberEmailChange}
+              />
+              <span>Recordar correo</span>
+            </label>
 
             {successMessage && (
               <div
