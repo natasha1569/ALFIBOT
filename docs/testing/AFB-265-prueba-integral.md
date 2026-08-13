@@ -28,3 +28,21 @@ La prueba integral debe ejecutarse con frontend, backend y PostgreSQL activos. N
 
 ## Criterio de cierre
 AFB-265 puede finalizarse cuando el flujo integral se ejecute sin errores críticos y se conserve evidencia de la ejecución.
+
+## Resultado de pruebas automatizadas finales
+
+Las pruebas automatizadas finales fueron ejecutadas correctamente antes de la entrega.
+
+- Backend: 31 de 31 pruebas aprobadas.
+- Frontend: 24 de 24 pruebas aprobadas.
+- Total: 55 de 55 pruebas aprobadas.
+- Errores detectados: 0.
+- PostgreSQL: conexión correcta durante las pruebas del backend.
+- Build de producción del frontend: completado correctamente con Vite.
+- Módulos transformados durante el build: 58.
+
+### Resultado
+
+La suite automatizada del proyecto finalizó sin errores y el frontend generó correctamente la versión de producción.
+
+Las pruebas manuales que dependan de interacción visual se registran de forma separada y no se consideran ejecutadas únicamente por esta suite.

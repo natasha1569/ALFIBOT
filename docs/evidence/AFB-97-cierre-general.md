@@ -27,3 +27,9 @@
 
 ## Cierre
 AFB-97 debe finalizarse después de cerrar las tareas finales dependientes y comprobar la ejecución integral.
+
+## Modelo de monetización
+
+El alcance final no contempla licencias comerciales para los usuarios.
+
+ALFI BOT se plantea como una solución de acceso gratuito y podrá monetizarse a mediano plazo mediante publicidad relevante basada en tendencias agregadas, manteniendo la privacidad de los usuarios y evitando el uso de información personal sensible.
