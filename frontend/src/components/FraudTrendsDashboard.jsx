@@ -1,29 +1,124 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fetchFraudTrends } from '../services/api.js';
 import {
   FRAUD_CATEGORY_LABELS,
   getFraudCategoryLabel,
 } from '../utils/fraudCategory.js';
+import {
+  aggregateReportRows,
+  buildLineChartPoints,
+  buildMonthlySeries,
+} from '../utils/reporting.js';
 
 const RISK_LABELS = Object.freeze({
   bajo: 'Bajo',
   medio: 'Medio',
   alto: 'Alto',
+  sin_dato: 'Sin dato',
 });
 
 const TYPE_LABELS = Object.freeze({
   text: 'Texto',
   link: 'Enlace',
   image: 'Imagen',
+  sin_dato: 'Sin dato',
 });
 
-export default function FraudTrendsDashboard() {
-  const [filters, setFilters] = useState({
-    category: '',
-    risk: '',
-    type: '',
-    period: '',
-  });
+const RISK_COLORS = Object.freeze({
+  bajo: '#16a34a',
+  medio: '#f59e0b',
+  alto: '#dc2626',
+  sin_dato: '#64748b',
+});
+
+const TYPE_COLORS = Object.freeze({
+  text: '#2563eb',
+  link: '#7c3aed',
+  image: '#0891b2',
+  sin_dato: '#64748b',
+});
+
+const EMPTY_FILTERS = Object.freeze({
+  category: '',
+  risk: '',
+  type: '',
+  period: '',
+});
+
+const HorizontalBars = ({ data, labels, colors, title }) => {
+  const maximum = Math.max(...data.map(({ total }) => total), 1);
+
+  return (
+    <section className="report-chart-panel" aria-label={title}>
+      <h3 className="h6 mb-4">{title}</h3>
+      <div className="report-bars">
+        {data.map(({ key, total }) => (
+          <div className="report-bar-row" key={key}>
+            <div className="d-flex justify-content-between gap-3 mb-1">
+              <span>{labels[key] || key}</span>
+              <strong>{total}</strong>
+            </div>
+            <div
+              className="report-bar-track"
+              role="img"
+              aria-label={`${labels[key] || key}: ${total} análisis`}
+            >
+              <span
+                style={{
+                  width: `${(total / maximum) * 100}%`,
+                  backgroundColor: colors[key] || '#64748b',
+                }}
+              ></span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const MonthlyLineChart = ({ series }) => {
+  const width = 720;
+  const height = 240;
+  const points = buildLineChartPoints(series, { width, height, padding: 42 });
+  const line = points.map(({ x, y }) => `${x},${y}`).join(' ');
+
+  return (
+    <section className="report-chart-panel report-line-panel" aria-labelledby="monthly-trend-title">
+      <h3 className="h6 mb-3" id="monthly-trend-title">Evolución mensual de análisis</h3>
+      <div className="report-line-chart">
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="monthly-chart-title monthly-chart-description">
+          <title id="monthly-chart-title">Tendencia mensual</title>
+          <desc id="monthly-chart-description">Cantidad total de análisis agregados por mes.</desc>
+          {[42, 94, 146, 198].map((y) => (
+            <line className="report-grid-line" x1="42" x2="678" y1={y} y2={y} key={y} />
+          ))}
+          <polyline className="report-trend-line" points={line} />
+          {points.map((point) => (
+            <g key={point.period}>
+              <circle className="report-trend-point" cx={point.x} cy={point.y} r="6">
+                <title>{point.period}: {point.total} análisis</title>
+              </circle>
+              <text className="report-axis-label" x={point.x} y="226" textAnchor="middle">
+                {point.period.slice(2)}
+              </text>
+            </g>
+          ))}
+        </svg>
+      </div>
+      <div className="d-flex flex-wrap gap-2 mt-3">
+        {series.map(({ period, total }) => (
+          <span className="badge text-bg-light border" key={period}>
+            {period}: {total}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+export default function FraudTrendsDashboard({ mode = 'reporting' }) {
+  const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
   const [report, setReport] = useState({ rows: [], totals: {} });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,8 +138,21 @@ export default function FraudTrendsDashboard() {
   };
 
   useEffect(() => {
-    loadReport();
+    loadReport({ ...EMPTY_FILTERS });
   }, []);
+
+  const riskData = useMemo(
+    () => aggregateReportRows(report.rows, 'riskLevel'),
+    [report.rows],
+  );
+  const typeData = useMemo(
+    () => aggregateReportRows(report.rows, 'type'),
+    [report.rows],
+  );
+  const monthlySeries = useMemo(
+    () => buildMonthlySeries(report.rows),
+    [report.rows],
+  );
 
   const updateFilter = (event) => {
     const { name, value } = event.target;
@@ -57,21 +165,25 @@ export default function FraudTrendsDashboard() {
   };
 
   const clearFilters = () => {
-    const emptyFilters = { category: '', risk: '', type: '', period: '' };
+    const emptyFilters = { ...EMPTY_FILTERS };
     setFilters(emptyFilters);
     loadReport(emptyFilters);
   };
 
+  const isTrendMode = mode === 'trends';
+  const title = isTrendMode ? 'Evolución de tendencias' : 'Reportería BI de fraude';
+  const description = isTrendMode
+    ? 'Evolución mensual agregada para identificar cambios en el volumen de análisis.'
+    : 'Distribución agregada por riesgo, contenido, categoría y periodo; no expone identidad individual.';
+
   return (
-    <section className="card border-0 shadow-sm mt-5">
+    <section className="card border-0 shadow-sm" aria-labelledby={`${mode}-dashboard-title`}>
       <div className="card-body p-4 p-lg-5">
         <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
           <div>
             <p className="section-kicker mb-1">Analítica agregada</p>
-            <h2 className="h4 mb-2">Tendencias de fraude</h2>
-            <p className="text-secondary mb-0">
-              Información agrupada por categoría, riesgo, tipo de contenido y periodo; no expone identidad individual.
-            </p>
+            <h2 className="h4 mb-2" id={`${mode}-dashboard-title`}>{title}</h2>
+            <p className="text-secondary mb-0">{description}</p>
           </div>
           <span className="badge text-bg-light border px-3 py-2">
             <i className="bi bi-shield-lock me-2"></i>
@@ -81,9 +193,9 @@ export default function FraudTrendsDashboard() {
 
         <form className="row g-3 mb-4" onSubmit={applyFilters}>
           <div className="col-12 col-md-6 col-xl-3">
-            <label className="form-label" htmlFor="fraud-category-filter">Categoría</label>
+            <label className="form-label" htmlFor={`${mode}-fraud-category-filter`}>Categoría</label>
             <select
-              id="fraud-category-filter"
+              id={`${mode}-fraud-category-filter`}
               className="form-select"
               name="category"
               value={filters.category}
@@ -97,41 +209,45 @@ export default function FraudTrendsDashboard() {
           </div>
 
           <div className="col-12 col-md-6 col-xl-3">
-            <label className="form-label" htmlFor="risk-filter">Riesgo</label>
+            <label className="form-label" htmlFor={`${mode}-risk-filter`}>Riesgo</label>
             <select
-              id="risk-filter"
+              id={`${mode}-risk-filter`}
               className="form-select"
               name="risk"
               value={filters.risk}
               onChange={updateFilter}
             >
               <option value="">Todos</option>
-              {Object.entries(RISK_LABELS).map(([value, label]) => (
-                <option value={value} key={value}>{label}</option>
-              ))}
+              {Object.entries(RISK_LABELS)
+                .filter(([value]) => value !== 'sin_dato')
+                .map(([value, label]) => (
+                  <option value={value} key={value}>{label}</option>
+                ))}
             </select>
           </div>
 
           <div className="col-12 col-md-6 col-xl-3">
-            <label className="form-label" htmlFor="content-type-filter">Contenido</label>
+            <label className="form-label" htmlFor={`${mode}-content-type-filter`}>Contenido</label>
             <select
-              id="content-type-filter"
+              id={`${mode}-content-type-filter`}
               className="form-select"
               name="type"
               value={filters.type}
               onChange={updateFilter}
             >
               <option value="">Todos</option>
-              {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                <option value={value} key={value}>{label}</option>
-              ))}
+              {Object.entries(TYPE_LABELS)
+                .filter(([value]) => value !== 'sin_dato')
+                .map(([value, label]) => (
+                  <option value={value} key={value}>{label}</option>
+                ))}
             </select>
           </div>
 
           <div className="col-12 col-md-6 col-xl-3">
-            <label className="form-label" htmlFor="period-filter">Periodo</label>
+            <label className="form-label" htmlFor={`${mode}-period-filter`}>Periodo</label>
             <input
-              id="period-filter"
+              id={`${mode}-period-filter`}
               className="form-control"
               type="month"
               name="period"
@@ -155,19 +271,19 @@ export default function FraudTrendsDashboard() {
 
         <div className="row g-3 mb-4">
           <div className="col-12 col-md-4">
-            <div className="border rounded-3 p-3 h-100">
+            <div className="report-stat-card h-100">
               <small className="text-secondary d-block">Análisis agregados</small>
               <strong className="fs-3">{report.totals?.totalAnalyses ?? 0}</strong>
             </div>
           </div>
           <div className="col-12 col-md-4">
-            <div className="border rounded-3 p-3 h-100">
+            <div className="report-stat-card h-100">
               <small className="text-secondary d-block">Señales detectadas</small>
               <strong className="fs-3">{report.totals?.totalWarningSigns ?? 0}</strong>
             </div>
           </div>
           <div className="col-12 col-md-4">
-            <div className="border rounded-3 p-3 h-100">
+            <div className="report-stat-card h-100">
               <small className="text-secondary d-block">Recomendaciones</small>
               <strong className="fs-3">{report.totals?.totalRecommendations ?? 0}</strong>
             </div>
@@ -175,37 +291,58 @@ export default function FraudTrendsDashboard() {
         </div>
 
         {isLoading ? (
-          <div className="text-secondary py-4">
+          <div className="text-secondary py-4" role="status">
             <span className="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
             Cargando tendencias…
           </div>
         ) : report.rows?.length > 0 ? (
-          <div className="table-responsive">
-            <table className="table align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>Periodo</th>
-                  <th>Categoría</th>
-                  <th>Riesgo</th>
-                  <th>Contenido</th>
-                  <th className="text-end">Análisis</th>
-                  <th className="text-end">% mensual</th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.rows.map((row) => (
-                  <tr key={`${row.period}-${row.fraudCategory || 'sin-categoria'}-${row.riskLevel}-${row.type}`}>
-                    <td>{row.period}</td>
-                    <td>{getFraudCategoryLabel(row.fraudCategory) || 'Sin categoría soportada'}</td>
-                    <td>{RISK_LABELS[row.riskLevel] || row.riskLevel}</td>
-                    <td>{TYPE_LABELS[row.type] || row.type}</td>
-                    <td className="text-end">{row.totalAnalyses}</td>
-                    <td className="text-end">{row.monthlyPercentage}%</td>
+          <>
+            {isTrendMode ? (
+              <MonthlyLineChart series={monthlySeries} />
+            ) : (
+              <div className="report-chart-grid mb-4">
+                <HorizontalBars
+                  data={riskData}
+                  labels={RISK_LABELS}
+                  colors={RISK_COLORS}
+                  title="Distribución por nivel de riesgo"
+                />
+                <HorizontalBars
+                  data={typeData}
+                  labels={TYPE_LABELS}
+                  colors={TYPE_COLORS}
+                  title="Distribución por tipo de contenido"
+                />
+              </div>
+            )}
+
+            <div className="table-responsive mt-4">
+              <table className="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Periodo</th>
+                    <th>Categoría</th>
+                    <th>Riesgo</th>
+                    <th>Contenido</th>
+                    <th className="text-end">Análisis</th>
+                    <th className="text-end">% mensual</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {report.rows.map((row) => (
+                    <tr key={`${row.period}-${row.fraudCategory || 'sin-categoria'}-${row.riskLevel}-${row.type}`}>
+                      <td>{row.period}</td>
+                      <td>{getFraudCategoryLabel(row.fraudCategory) || 'Sin categoría soportada'}</td>
+                      <td>{RISK_LABELS[row.riskLevel] || row.riskLevel}</td>
+                      <td>{TYPE_LABELS[row.type] || row.type}</td>
+                      <td className="text-end">{row.totalAnalyses}</td>
+                      <td className="text-end">{row.monthlyPercentage}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <div className="alert alert-light border mb-0">
             No existen datos agregados para los filtros seleccionados.

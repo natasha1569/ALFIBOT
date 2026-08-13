@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes.js';
 import privilegedAuthRoutes from './routes/privileged-auth.routes.js';
 import reportingRoutes from './routes/reporting.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import auditRoutes from './routes/audit.routes.js';
 import authMiddleware from './middlewares/auth.middleware.js';
 import { requirePermission } from './middlewares/authorization.middleware.js';
 import { PERMISSIONS } from './config/permissions.js';
@@ -101,6 +102,7 @@ app.use('/api/auth', privilegedAuthRoutes);
 app.use('/api/analysis', authMiddleware, analysisRoutes);
 app.use('/api/reporting', authMiddleware, reportingRoutes);
 app.use('/api/admin', authMiddleware, adminRoutes);
+app.use('/api/audit', authMiddleware, auditRoutes);
 
 
 // ======================================================

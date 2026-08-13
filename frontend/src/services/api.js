@@ -144,6 +144,10 @@ export function fetchFraudTrends(filters = {}) {
   return request(`/api/reporting/fraud-trends${query ? `?${query}` : ''}`);
 }
 
+export function fetchAuditEvents(filters = {}) {
+  return request(`/api/audit/events${buildQuery(filters)}`);
+}
+
 function buildQuery(filters = {}) {
   const params = new URLSearchParams();
 

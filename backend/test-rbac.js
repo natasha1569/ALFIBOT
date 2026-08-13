@@ -44,6 +44,7 @@ const matrixCases = [
   [APP_ROLES.AUDITOR, PERMISSIONS.AUDIT_READ, true],
   [APP_ROLES.AUDITOR, PERMISSIONS.USERS_ADMIN, false],
   [APP_ROLES.ADMIN, PERMISSIONS.REPORTING_READ, true],
+  [APP_ROLES.ADMIN, PERMISSIONS.AUDIT_READ, true],
   [APP_ROLES.ADMIN, PERMISSIONS.USERS_ADMIN, true],
   [APP_ROLES.ADMIN, PERMISSIONS.DATABASE_DIAGNOSTICS, true],
 ];
@@ -77,6 +78,22 @@ const deniedUser = executeMiddleware(reporting, {
   role: APP_ROLES.USER,
 });
 assert(deniedUser.statusCode === 403, 'Usuario debe recibir 403 en reportería.');
+
+const audit = requirePermission(PERMISSIONS.AUDIT_READ);
+const allowedAuditAdmin = executeMiddleware(audit, {
+  role: APP_ROLES.ADMIN,
+});
+assert(allowedAuditAdmin.nextCalled, 'Administrador debe acceder a auditoría.');
+
+const allowedAuditAuditor = executeMiddleware(audit, {
+  role: APP_ROLES.AUDITOR,
+});
+assert(allowedAuditAuditor.nextCalled, 'Auditor debe acceder a auditoría.');
+
+const deniedAuditUser = executeMiddleware(audit, {
+  role: APP_ROLES.USER,
+});
+assert(deniedAuditUser.statusCode === 403, 'Usuario debe recibir 403 en auditoría.');
 
 const unauthenticated = executeMiddleware(reporting, null);
 assert(
