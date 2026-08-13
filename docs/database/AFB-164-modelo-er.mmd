@@ -1,0 +1,75 @@
+erDiagram
+    ROLES ||--o{ USUARIOS : asigna
+    USUARIOS ||--o{ ANALISIS : realiza
+    ANALISIS ||--o{ SENALES_ALERTA : genera
+    ANALISIS ||--o{ RECOMENDACIONES : genera
+    USUARIOS ||--o{ USUARIO_INTERESES_FINANCIEROS : posee
+    INTERESES_FINANCIEROS ||--o{ USUARIO_INTERESES_FINANCIEROS : clasifica
+
+    ROLES {
+        int rol_id PK
+        varchar nombre
+        varchar descripcion
+    }
+
+    USUARIOS {
+        int usuario_id PK
+        int rol_id FK
+        varchar nombre
+        varchar correo
+        varchar password_hash
+        boolean activo
+        timestamp fecha_registro
+        varchar celular
+        timestamp fecha_actualizacion
+        varchar provincia
+        varchar rango_edad
+    }
+
+    ANALISIS {
+        int analisis_id PK
+        int usuario_id FK
+        varchar tipo
+        text contenido
+        varchar nivel_riesgo
+        text resumen
+        boolean permitido
+        timestamp fecha_creacion
+        varchar categoria_fraude
+    }
+
+    SENALES_ALERTA {
+        int senal_id PK
+        int analisis_id FK
+        varchar descripcion
+        int orden
+    }
+
+    RECOMENDACIONES {
+        int recomendacion_id PK
+        int analisis_id FK
+        varchar descripcion
+        int orden
+    }
+
+    INTERESES_FINANCIEROS {
+        int interes_id PK
+        varchar codigo
+        varchar nombre
+        boolean activo
+    }
+
+    USUARIO_INTERESES_FINANCIEROS {
+        int usuario_id PK, FK
+        int interes_id PK, FK
+        timestamp fecha_registro
+    }
+
+    AUDITORIA {
+        bigint auditoria_id PK
+        varchar tabla
+        varchar operacion
+        varchar registro_id
+        varchar usuario_bd
+        timestamp fecha_operacion
+    }
