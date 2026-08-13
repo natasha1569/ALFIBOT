@@ -9,6 +9,11 @@ import {
   createRegisteredUser,
   findUserByEmail,
 } from '../services/user.service.js';
+import {
+  ERROR_CODES,
+  logServerError,
+  sendError,
+} from '../errors/errorCatalog.js';
 
 const router = Router();
 
@@ -62,6 +67,11 @@ const FINANCIAL_INTERESTS = new Set([
 ]);
 
 const TERMS_VERSION = '2026-08-12';
+const sendValidationError = (res, publicMessage) => sendError(
+  res,
+  ERROR_CODES.INVALID_REQUEST,
+  { publicMessage },
+);
 
 function buildPublicUser(user) {
   return {
@@ -107,67 +117,61 @@ router.post('/register', async (req, res) => {
     typeof password !== 'string' ||
     typeof confirmPassword !== 'string'
   ) {
-    return res.status(400).json({ error: 'Completa todos los campos del registro.' });
+    return sendValidationError(res, 'Completa todos los campos del registro.');
   }
 
   if (normalizedName.length < 3 || normalizedName.length > 100) {
-    return res.status(400).json({
-      error: 'El nombre debe tener entre 3 y 100 caracteres.',
-    });
+    return sendValidationError(res, 'El nombre debe tener entre 3 y 100 caracteres.');
   }
 
   if (!EMAIL_PATTERN.test(normalizedEmail) || normalizedEmail.length > 120) {
-    return res.status(400).json({ error: 'Ingresa un correo electrónico válido.' });
+    return sendValidationError(res, 'Ingresa un correo electrónico válido.');
   }
 
   if (!ECUADOR_MOBILE_PATTERN.test(normalizedPhone)) {
-    return res.status(400).json({
-      error: 'El celular debe tener formato ecuatoriano 09XXXXXXXX.',
-    });
+    return sendValidationError(res, 'El celular debe tener formato ecuatoriano 09XXXXXXXX.');
   }
 
   if (!PROVINCES.has(normalizedProvince)) {
-    return res.status(400).json({
-      error: 'Selecciona una provincia válida del Ecuador.',
-    });
+    return sendValidationError(res, 'Selecciona una provincia válida del Ecuador.');
   }
 
   if (!AGE_RANGES.has(normalizedAgeRange)) {
-    return res.status(400).json({
-      error: 'Selecciona un rango de edad válido.',
-    });
+    return sendValidationError(res, 'Selecciona un rango de edad válido.');
   }
 
   if (
     normalizedInterests.length === 0 ||
     normalizedInterests.some((interest) => !FINANCIAL_INTERESTS.has(interest))
   ) {
-    return res.status(400).json({
-      error: 'Selecciona al menos un interés financiero válido.',
-    });
+    return sendValidationError(res, 'Selecciona al menos un interés financiero válido.');
   }
 
   if (termsAccepted !== true) {
-    return res.status(400).json({
-      error: 'Debes aceptar los Términos y Condiciones y la Política de Privacidad.',
-    });
+    return sendValidationError(
+      res,
+      'Debes aceptar los Términos y Condiciones y la Política de Privacidad.',
+    );
   }
 
   if (!STRONG_PASSWORD_PATTERN.test(password)) {
-    return res.status(400).json({
-      error: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.',
-    });
+    return sendValidationError(
+      res,
+      'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.',
+    );
   }
 
   if (password !== confirmPassword) {
-    return res.status(400).json({ error: 'Las contraseñas no coinciden.' });
+    return sendValidationError(res, 'Las contraseñas no coinciden.');
   }
 
   try {
     const existingUser = await findUserByEmail(normalizedEmail);
 
     if (existingUser) {
-      return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' });
+      return sendError(res, ERROR_CODES.CONFLICT, {
+        publicMessage: 'Ya existe una cuenta con ese correo.',
+      });
     }
 
     const passwordHash = await hashSecurePassword(password);
@@ -189,17 +193,19 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     if (error?.code === '23505') {
-      return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' });
-    }
-
-    if (error?.code === 'ALFI_INVALID_INTERESTS') {
-      return res.status(400).json({
-        error: 'Uno o más intereses financieros no son válidos.',
+      return sendError(res, ERROR_CODES.CONFLICT, {
+        publicMessage: 'Ya existe una cuenta con ese correo.',
       });
     }
 
-    console.error('[auth.routes] Error al registrar usuario:', error.message);
-    return res.status(500).json({ error: 'No se pudo crear la cuenta.' });
+    if (error?.code === 'ALFI_INVALID_INTERESTS') {
+      return sendValidationError(res, 'Uno o más intereses financieros no son válidos.');
+    }
+
+    logServerError('auth.routes/register', error);
+    return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+      publicMessage: 'No se pudo crear la cuenta. Intenta nuevamente.',
+    });
   }
 });
 
@@ -212,7 +218,7 @@ router.post('/login', async (req, res) => {
     !email.trim() ||
     !password
   ) {
-    return res.status(400).json({ error: 'Ingresa el correo y la contraseña.' });
+    return sendValidationError(res, 'Ingresa el correo y la contraseña.');
   }
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -222,7 +228,7 @@ router.post('/login', async (req, res) => {
 
     if (databaseUser) {
       if (!databaseUser.active) {
-        return res.status(401).json({ error: 'La cuenta no se encuentra activa.' });
+        return sendError(res, ERROR_CODES.ACCOUNT_INACTIVE);
       }
 
       const validPassword = await verifySecurePassword(
@@ -231,12 +237,12 @@ router.post('/login', async (req, res) => {
       );
 
       if (!validPassword) {
-        return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
+        return sendError(res, ERROR_CODES.INVALID_CREDENTIALS);
       }
 
       if (databaseUser.role !== 'usuario') {
-        return res.status(403).json({
-          error: 'Esta cuenta debe ingresar desde su acceso institucional.',
+        return sendError(res, ERROR_CODES.FORBIDDEN, {
+          publicMessage: 'Esta cuenta debe ingresar desde su acceso institucional.',
         });
       }
 
@@ -248,10 +254,12 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
+    return sendError(res, ERROR_CODES.INVALID_CREDENTIALS);
   } catch (error) {
-    console.error('[auth.routes] Error consultando usuarios:', error.message);
-    return res.status(500).json({ error: 'No se pudo validar la cuenta.' });
+    logServerError('auth.routes/login', error);
+    return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+      publicMessage: 'No se pudo validar la cuenta. Intenta nuevamente.',
+    });
   }
 });
 

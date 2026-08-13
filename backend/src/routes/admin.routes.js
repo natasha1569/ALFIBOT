@@ -10,16 +10,26 @@ import {
   listUsers,
   updateUserAdministration,
 } from '../services/user.service.js';
+import {
+  ERROR_CODES,
+  logServerError,
+  sendError,
+} from '../errors/errorCatalog.js';
 
 const router = Router();
 
 function sendKnownError(error, res, fallbackMessage) {
-  if (error?.statusCode) {
-    return res.status(error.statusCode).json({ error: error.message });
+  if (Number(error?.statusCode) >= 400 && Number(error?.statusCode) < 500) {
+    return sendError(res, ERROR_CODES.INVALID_REQUEST, {
+      status: Number(error.statusCode),
+      publicMessage: error.message,
+    });
   }
 
-  console.error('[admin]', error.message);
-  return res.status(500).json({ error: fallbackMessage });
+  logServerError('admin', error);
+  return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+    publicMessage: fallbackMessage,
+  });
 }
 
 router.get(
@@ -53,8 +63,8 @@ router.patch(
           changes.role !== req.user.role || changes.active === false;
 
         if (currentRoleChanges) {
-          return res.status(409).json({
-            error: 'No puedes quitarte el rol administrador ni desactivar tu propia sesión.',
+          return sendError(res, ERROR_CODES.CONFLICT, {
+            publicMessage: 'No puedes quitarte el rol administrador ni desactivar tu propia sesión.',
           });
         }
       }
@@ -65,7 +75,9 @@ router.patch(
       });
 
       if (!user) {
-        return res.status(404).json({ error: 'Usuario no encontrado.' });
+        return sendError(res, ERROR_CODES.NOT_FOUND, {
+          publicMessage: 'Usuario no encontrado.',
+        });
       }
 
       return res.json({

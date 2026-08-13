@@ -194,6 +194,7 @@ El contenido final debe revisarse antes de enviarlo. ALFI BOT ofrece orientació
 
 - [Convenciones de desarrollo y contribución](CONTRIBUTING.md).
 - [Índice de decisiones de arquitectura (ADRs)](docs/adr/README.md).
+- [Estándar de manejo de errores](docs/development/AFB-146-error-handling.md).
 - [Matriz de pruebas funcionales](docs/testing/matriz-pruebas.md).
 - [Evidencia de AFB-268 y AFB-271](docs/testing/AFB-268-271-evidencia-pruebas.md).
 - [Trazabilidad de ramas, commits y PR](docs/evidence/AFB-293-trazabilidad-git.md).

@@ -5,6 +5,12 @@ import {
   validateImageDataUri,
 } from '../services/imageAnalysis.service.js';
 import pool from '../config/database.js';
+import {
+  AppError,
+  ERROR_CODES,
+  logServerError,
+  sendError,
+} from '../errors/errorCatalog.js';
 
 const VALID_TYPES = ['text', 'link', 'image'];
 const MAX_TEXT_LENGTH = 5000;
@@ -55,10 +61,7 @@ export async function analyzeContent(req, res) {
     const { type, content } = req.body || {};
 
     if (!type || !VALID_TYPES.includes(type)) {
-      return res.status(400).json({
-        error:
-          'El campo "type" es obligatorio y debe ser "text", "link" o "image".',
-      });
+      return sendError(res, ERROR_CODES.INVALID_CONTENT_TYPE);
     }
 
     if (
@@ -66,20 +69,18 @@ export async function analyzeContent(req, res) {
       typeof content !== 'string' ||
       content.trim().length === 0
     ) {
-      return res.status(400).json({
-        error: 'El campo "content" es obligatorio y no puede estar vacío.',
-      });
+      return sendError(res, ERROR_CODES.CONTENT_REQUIRED);
     }
 
     if (type === 'text' && content.length > MAX_TEXT_LENGTH) {
-      return res.status(400).json({
-        error: `El texto no puede superar los ${MAX_TEXT_LENGTH} caracteres.`,
+      return sendError(res, ERROR_CODES.CONTENT_TOO_LONG, {
+        publicMessage: `El texto no puede superar los ${MAX_TEXT_LENGTH} caracteres.`,
       });
     }
 
     if (type === 'link' && content.length > MAX_LINK_LENGTH) {
-      return res.status(400).json({
-        error: 'El enlace ingresado es demasiado largo.',
+      return sendError(res, ERROR_CODES.CONTENT_TOO_LONG, {
+        publicMessage: 'El enlace ingresado es demasiado largo.',
       });
     }
 
@@ -88,9 +89,7 @@ export async function analyzeContent(req, res) {
       !content.trim().toLowerCase().startsWith('http://') &&
       !content.trim().toLowerCase().startsWith('https://')
     ) {
-      return res.status(400).json({
-        error: 'El enlace debe comenzar con http:// o https://.',
-      });
+      return sendError(res, ERROR_CODES.INVALID_LINK);
     }
 
     let normalizedContent = content.trim();
@@ -100,7 +99,9 @@ export async function analyzeContent(req, res) {
         normalizedContent = validateImageDataUri(content).dataUri;
       } catch (error) {
         if (error instanceof ImageValidationError) {
-          return res.status(400).json({ error: error.message });
+          return sendError(res, ERROR_CODES.INVALID_IMAGE, {
+            publicMessage: error.message,
+          });
         }
 
         throw error;
@@ -118,12 +119,6 @@ export async function analyzeContent(req, res) {
       content: normalizedContent,
       linkContext,
     });
-
-    if (result.configError) {
-      return res.status(503).json({
-        error: result.configError,
-      });
-    }
 
     // Cuando el contenido no pertenece al ámbito financiero,
     // se devuelve el resultado pero no se guarda en el historial.
@@ -149,8 +144,8 @@ export async function analyzeContent(req, res) {
 
     if (!Number.isInteger(userId) || userId <= 0) {
       await client.query('ROLLBACK');
-      return res.status(401).json({
-        error: 'La sesión no contiene un usuario válido.',
+      return sendError(res, ERROR_CODES.INVALID_SESSION, {
+        publicMessage: 'La sesión no contiene un usuario válido.',
       });
     }
 
@@ -242,17 +237,19 @@ export async function analyzeContent(req, res) {
     });
   } catch (error) {
     if (client) {
-      await client.query('ROLLBACK');
+      try {
+        await client.query('ROLLBACK');
+      } catch (rollbackError) {
+        logServerError('analysis.controller/rollback', rollbackError);
+      }
     }
 
-    console.error(
-      '[analysis.controller] Error inesperado en analyzeContent:',
-      error.message,
-    );
+    logServerError('analysis.controller/analyzeContent', error);
 
-    return res.status(500).json({
-      error: `No se pudo completar el análisis. Detalle backend: ${error.message}`,
-    });
+    return sendError(
+      res,
+      error instanceof AppError ? error : ERROR_CODES.DATABASE_UNAVAILABLE,
+    );
   } finally {
     if (client) {
       client.release();
@@ -309,13 +306,10 @@ export async function getHistory(req, res) {
 
     return res.status(200).json(result.rows);
   } catch (error) {
-    console.error(
-      '[analysis.controller] Error en getHistory:',
-      error.message,
-    );
+    logServerError('analysis.controller/getHistory', error);
 
-    return res.status(500).json({
-      error: 'No se pudo obtener el historial desde PostgreSQL.',
+    return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+      publicMessage: 'No se pudo obtener el historial. Intenta nuevamente.',
     });
   }
 }
@@ -343,13 +337,10 @@ export async function clearHistory(req, res) {
       deletedRecords: result.rowCount,
     });
   } catch (error) {
-    console.error(
-      '[analysis.controller] Error en clearHistory:',
-      error.message,
-    );
+    logServerError('analysis.controller/clearHistory', error);
 
-    return res.status(500).json({
-      error: 'No se pudo borrar el historial de PostgreSQL.',
+    return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+      publicMessage: 'No se pudo borrar el historial. Intenta nuevamente.',
     });
   }
 }
