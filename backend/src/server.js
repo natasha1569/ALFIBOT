@@ -10,6 +10,11 @@ import authMiddleware from './middlewares/auth.middleware.js';
 import { requirePermission } from './middlewares/authorization.middleware.js';
 import { PERMISSIONS } from './config/permissions.js';
 import pool from './config/database.js';
+import {
+  ERROR_CODES,
+  logServerError,
+  sendError,
+} from './errors/errorCatalog.js';
 
 dotenv.config();
 
@@ -56,11 +61,9 @@ if (diagnosticsEnabled) {
         data: result.rows[0],
       });
     } catch (error) {
-      console.error('[database/test]', error.message);
-
-      res.status(500).json({
-        connected: false,
-        message: 'Error al conectar con PostgreSQL.',
+      logServerError('database/test', error);
+      return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+        publicMessage: 'No se pudo comprobar la conexión de datos.',
       });
     }
     },
@@ -80,11 +83,8 @@ if (diagnosticsEnabled) {
 
       res.json(result.rows);
     } catch (error) {
-      console.error('[database/analisis]', error.message);
-
-      res.status(500).json({
-        error: 'No se pudo consultar la información solicitada.',
-      });
+      logServerError('database/analisis', error);
+      return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE);
     }
     },
   );
@@ -108,8 +108,8 @@ app.use('/api/admin', authMiddleware, adminRoutes);
 // ======================================================
 
 app.use((req, res) => {
-  res.status(404).json({
-    error: 'Ruta no encontrada.',
+  return sendError(res, ERROR_CODES.NOT_FOUND, {
+    publicMessage: 'Ruta no encontrada.',
   });
 });
 
@@ -119,11 +119,16 @@ app.use((req, res) => {
 // ======================================================
 
 app.use((err, req, res, next) => {
-  console.error('[server] Error no controlado:', err.message);
+  if (err?.type === 'entity.parse.failed') {
+    return sendError(res, ERROR_CODES.INVALID_JSON);
+  }
 
-  res.status(500).json({
-    error: 'Ocurrió un error interno en el servidor.',
-  });
+  if (err?.type === 'entity.too.large') {
+    return sendError(res, ERROR_CODES.PAYLOAD_TOO_LARGE);
+  }
+
+  logServerError('server/unhandled', err);
+  return sendError(res, ERROR_CODES.INTERNAL_ERROR);
 });
 
 

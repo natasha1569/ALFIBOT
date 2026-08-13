@@ -3,6 +3,11 @@ import { APP_ROLES } from '../config/permissions.js';
 import { createAuthToken } from '../services/token.service.js';
 import { verifySecurePassword } from '../services/password.service.js';
 import { findUserByEmail } from '../services/user.service.js';
+import {
+  ERROR_CODES,
+  logServerError,
+  sendError,
+} from '../errors/errorCatalog.js';
 
 const router = Router();
 
@@ -25,8 +30,8 @@ function createRoleLogin(expectedRole) {
       !email.trim() ||
       !password
     ) {
-      return res.status(400).json({
-        error: 'Ingresa el correo y la contraseña.',
+      return sendError(res, ERROR_CODES.INVALID_REQUEST, {
+        publicMessage: 'Ingresa el correo y la contraseña.',
       });
     }
 
@@ -34,9 +39,7 @@ function createRoleLogin(expectedRole) {
       const user = await findUserByEmail(email.trim().toLowerCase());
 
       if (!user || !user.active) {
-        return res.status(401).json({
-          error: 'Correo o contraseña incorrectos.',
-        });
+        return sendError(res, ERROR_CODES.INVALID_CREDENTIALS);
       }
 
       const validPassword = await verifySecurePassword(
@@ -45,14 +48,12 @@ function createRoleLogin(expectedRole) {
       );
 
       if (!validPassword) {
-        return res.status(401).json({
-          error: 'Correo o contraseña incorrectos.',
-        });
+        return sendError(res, ERROR_CODES.INVALID_CREDENTIALS);
       }
 
       if (user.role !== expectedRole) {
-        return res.status(403).json({
-          error: 'La cuenta no está autorizada para este portal.',
+        return sendError(res, ERROR_CODES.FORBIDDEN, {
+          publicMessage: 'La cuenta no está autorizada para este portal.',
         });
       }
 
@@ -63,9 +64,9 @@ function createRoleLogin(expectedRole) {
         user: publicUser,
       });
     } catch (error) {
-      console.error('[privileged-auth] Error de autenticación:', error.message);
-      return res.status(500).json({
-        error: 'No se pudo validar la cuenta.',
+      logServerError('privileged-auth/login', error);
+      return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+        publicMessage: 'No se pudo validar la cuenta. Intenta nuevamente.',
       });
     }
   };

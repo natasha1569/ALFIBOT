@@ -4,9 +4,34 @@ import { clearAuthSession, getAuthToken } from '../auth/authStorage.js';
 // del frontend debe llamar a fetch() directamente ni conocer nada de OpenAI:
 // eso vive exclusivamente en el backend.
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const runtimeEnv = import.meta.env || {};
+const API_BASE_URL = runtimeEnv.VITE_API_URL || 'http://localhost:4000';
 // El análisis de imágenes ejecuta dos etapas: visión/OCR y evaluación de riesgo.
-const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_REQUEST_TIMEOUT_MS || 90000);
+const REQUEST_TIMEOUT_MS = Number(runtimeEnv.VITE_REQUEST_TIMEOUT_MS || 90000);
+
+export class ApiError extends Error {
+  constructor(message, options = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = options.code || 'UNKNOWN_ERROR';
+    this.status = Number(options.status || 0);
+  }
+}
+
+export const createApiError = (data, status) => {
+  const nestedError = data?.error && typeof data.error === 'object'
+    ? data.error
+    : null;
+  const message = typeof data?.error === 'string'
+    ? data.error
+    : nestedError?.message;
+  const code = data?.code || nestedError?.code || 'UNKNOWN_ERROR';
+
+  return new ApiError(
+    message || 'Ocurrió un error inesperado al comunicarse con el backend.',
+    { code, status },
+  );
+};
 
 async function request(path, options = {}) {
   const controller = new AbortController();
@@ -26,9 +51,15 @@ async function request(path, options = {}) {
     });
   } catch (error) {
     if (error?.name === 'AbortError') {
-      throw new Error('La consulta tardó demasiado. Revisa la consola del backend o intenta con un texto más corto.');
+      throw new ApiError(
+        'La consulta tardó demasiado. Intenta nuevamente.',
+        { code: 'CLIENT_TIMEOUT', status: 504 },
+      );
     }
-    throw new Error(`No se pudo conectar con el backend en ${API_BASE_URL}. ¿Está corriendo?`);
+    throw new ApiError(
+      `No se pudo conectar con el backend en ${API_BASE_URL}. ¿Está corriendo?`,
+      { code: 'NETWORK_ERROR' },
+    );
   } finally {
     clearTimeout(timeoutId);
   }
@@ -45,7 +76,7 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || 'Ocurrió un error inesperado al comunicarse con el backend.');
+    throw createApiError(data, response.status);
   }
 
   return data;

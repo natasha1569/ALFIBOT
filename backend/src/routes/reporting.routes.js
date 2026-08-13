@@ -2,6 +2,11 @@ import { Router } from 'express';
 import { requirePermission } from '../middlewares/authorization.middleware.js';
 import { PERMISSIONS } from '../config/permissions.js';
 import pool from '../config/database.js';
+import {
+  ERROR_CODES,
+  logServerError,
+  sendError,
+} from '../errors/errorCatalog.js';
 
 const router = Router();
 
@@ -28,19 +33,27 @@ router.get(
       const period = String(req.query.period || '').trim();
 
       if (category && !VALID_CATEGORIES.has(category)) {
-        return res.status(400).json({ error: 'Categoría de fraude no válida.' });
+        return sendError(res, ERROR_CODES.INVALID_REQUEST, {
+          publicMessage: 'Categoría de fraude no válida.',
+        });
       }
 
       if (risk && !VALID_RISKS.has(risk)) {
-        return res.status(400).json({ error: 'Nivel de riesgo no válido.' });
+        return sendError(res, ERROR_CODES.INVALID_REQUEST, {
+          publicMessage: 'Nivel de riesgo no válido.',
+        });
       }
 
       if (type && !VALID_TYPES.has(type)) {
-        return res.status(400).json({ error: 'Tipo de contenido no válido.' });
+        return sendError(res, ERROR_CODES.INVALID_REQUEST, {
+          publicMessage: 'Tipo de contenido no válido.',
+        });
       }
 
       if (period && !PERIOD_PATTERN.test(period)) {
-        return res.status(400).json({ error: 'El periodo debe tener formato YYYY-MM.' });
+        return sendError(res, ERROR_CODES.INVALID_REQUEST, {
+          publicMessage: 'El periodo debe tener formato YYYY-MM.',
+        });
       }
 
       const conditions = [];
@@ -98,9 +111,9 @@ router.get(
         rows: result.rows,
       });
     } catch (error) {
-      console.error('[reporting/fraud-trends]', error.message);
-      return res.status(500).json({
-        error: 'No se pudo consultar la reportería agregada de fraudes.',
+      logServerError('reporting/fraud-trends', error);
+      return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
+        publicMessage: 'No se pudo consultar la reportería agregada de fraudes.',
       });
     }
   },

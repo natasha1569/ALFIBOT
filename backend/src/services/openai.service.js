@@ -10,6 +10,12 @@ import {
   normalizeImageEvidence,
   runImageAnalysisPipeline,
 } from './imageAnalysis.service.js';
+import {
+  ERROR_CODES,
+  createAppError,
+  isTimeoutError,
+  logServerError,
+} from '../errors/errorCatalog.js';
 
 const DEFAULT_MESSAGE =
   'Este sistema solo analiza posibles fraudes financieros digitales, estafas piramidales, inversiones sospechosas, créditos o préstamos engañosos.';
@@ -286,6 +292,16 @@ function getOpenAIErrorMessage(error) {
   );
 }
 
+export const mapOpenAIError = (error) => createAppError(
+  isTimeoutError(error)
+    ? ERROR_CODES.AI_TIMEOUT
+    : ERROR_CODES.AI_SERVICE_UNAVAILABLE,
+  {
+    cause: error,
+    internalMessage: getOpenAIErrorMessage(error),
+  },
+);
+
 async function callModel({ client, model, input }) {
   const response = await client.responses.create({
     model,
@@ -355,7 +371,7 @@ export async function analyzeWithAI({ type, content, linkContext = null }) {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey || apiKey.includes('PEGA_AQUI') || apiKey === 'coloca_tu_api_key_aqui') {
-    return { configError: 'Falta configurar OPENAI_API_KEY con una API key real en el archivo .env del backend.' };
+    throw createAppError(ERROR_CODES.OPENAI_API_KEY_MISSING);
   }
 
   const primaryModel = process.env.OPENAI_MODEL || 'gpt-5-mini';
@@ -372,11 +388,10 @@ export async function analyzeWithAI({ type, content, linkContext = null }) {
       linkContext,
     });
   } catch (primaryError) {
-    const primaryMessage = getOpenAIErrorMessage(primaryError);
-    console.error(`[openai.service] Falló el modelo principal (${primaryModel}): ${primaryMessage}`);
+    logServerError(`openai.service/${primaryModel}`, primaryError);
 
     if (!fallbackModel || fallbackModel === primaryModel) {
-      throw new Error(`OpenAI falló con el modelo ${primaryModel}: ${primaryMessage}`);
+      throw mapOpenAIError(primaryError);
     }
 
     try {
@@ -389,9 +404,8 @@ export async function analyzeWithAI({ type, content, linkContext = null }) {
         linkContext,
       });
     } catch (fallbackError) {
-      const fallbackMessage = getOpenAIErrorMessage(fallbackError);
-      console.error(`[openai.service] También falló el modelo de respaldo (${fallbackModel}): ${fallbackMessage}`);
-      throw new Error(`OpenAI falló con ${primaryModel} y ${fallbackModel}. Último error: ${fallbackMessage}`);
+      logServerError(`openai.service/${fallbackModel}`, fallbackError);
+      throw mapOpenAIError(fallbackError);
     }
   }
 }
