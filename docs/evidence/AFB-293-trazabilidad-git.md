@@ -53,10 +53,12 @@ Repositorio: [natasha1569/ALFIBOT](https://github.com/natasha1569/ALFIBOT).
 | [AFB-268](https://pucetec-el-romel.atlassian.net/browse/AFB-268) | `agent/afb-268-271-285-293-282` | `d81b34d` | Normalización del historial y pruebas |
 | [AFB-271](https://pucetec-el-romel.atlassian.net/browse/AFB-271) | `agent/afb-268-271-285-293-282` | `e7e675e`, `c0a082c` | Pruebas de WhatsApp, PDF y portapapeles |
 | [AFB-285](https://pucetec-el-romel.atlassian.net/browse/AFB-285) | `agent/afb-268-271-285-293-282` | `4336331` | README de instalación y operación |
-| [AFB-293](https://pucetec-el-romel.atlassian.net/browse/AFB-293) | `agent/afb-268-271-285-293-282` | Commit de esta matriz | Matriz de trazabilidad |
+| [AFB-293](https://pucetec-el-romel.atlassian.net/browse/AFB-293) | `agent/afb-268-271-285-293-282` | `0d33042` | Matriz de trazabilidad |
 | [AFB-282](https://pucetec-el-romel.atlassian.net/browse/AFB-282) | `agent/afb-268-271-285-293-282` | `bc34dbb` | Preguntas técnicas frecuentes |
 
-El número del Pull Request de esta rama se añadirá después de publicarla. Los tickets no deben marcarse como finalizados hasta que el PR sea revisado, fusionado a `main` y GitHub Actions termine correctamente.
+Pull Request actual: [#31](https://github.com/natasha1569/ALFIBOT/pull/31), abierto como borrador contra `main`.
+
+Los tickets no deben marcarse como finalizados hasta que el PR sea revisado, fusionado a `main` y GitHub Actions termine correctamente.
 
 ## Observación
 
