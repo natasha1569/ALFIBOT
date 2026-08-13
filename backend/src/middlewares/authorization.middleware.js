@@ -1,7 +1,6 @@
 import { roleHasPermission } from '../config/permissions.js';
 
-export function requireRoles(...allowedRoles) {
-  return function roleAuthorizationMiddleware(req, res, next) {
+export const requireRoles = (...allowedRoles) => (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         error: 'Debes iniciar sesión para continuar.',
@@ -15,11 +14,9 @@ export function requireRoles(...allowedRoles) {
     }
 
     return next();
-  };
-}
+};
 
-export function requirePermission(permission) {
-  return function permissionAuthorizationMiddleware(req, res, next) {
+export const requirePermission = (permission) => (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         error: 'Debes iniciar sesión para continuar.',
@@ -33,5 +30,4 @@ export function requirePermission(permission) {
     }
 
     return next();
-  };
-}
+};

@@ -8,6 +8,7 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "node --test test/*.test.js",
+    "check:conventions": "node --test test/conventions.test.js",
     "test:image": "node --test test/imageAnalysis.service.test.js",
     "test:openai": "node test-openai.js",
     "test:auth": "node test-auth.js",

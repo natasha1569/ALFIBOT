@@ -59,7 +59,7 @@ const fraudCategoryAliases = Object.freeze({
   fraude_inversion: "inversion_fraudulenta",
 });
 
-export function normalizeFraudCategory(value) {
+export const normalizeFraudCategory = (value) => {
   const normalized = String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -72,7 +72,7 @@ export function normalizeFraudCategory(value) {
   return fraudCategoryValues.includes(canonicalValue)
     ? canonicalValue
     : null;
-}
+};
 
 export const trustedEntitySignals = [
   "Dominio propio institucional y no un enlace acortado, opaco o sospechoso.",
