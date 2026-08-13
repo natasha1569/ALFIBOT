@@ -27,7 +27,7 @@ export default function LandingPage({ onStart, onLogin }) {
               className="landing-primary-button"
               onClick={onStart}
             >
-              Probar ALFI BOT
+              Iniciar prueba gratuita
             </button>
           </div>
         </div>
@@ -67,16 +67,15 @@ export default function LandingPage({ onStart, onLogin }) {
                 className="landing-primary-button landing-large-button"
                 onClick={onStart}
               >
-                <i className="bi bi-search"></i>
-                Analizar contenido ahora
+                <i className="bi bi-stars"></i>
+                Iniciar prueba gratuita
               </button>
 
               <a
                 className="landing-secondary-button landing-large-button"
                 href="#como-funciona"
               >
-                <i className="bi bi-play-circle"></i>
-                Ver cómo funciona
+                Conocer más
               </a>
             </div>
 
