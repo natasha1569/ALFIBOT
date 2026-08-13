@@ -103,10 +103,8 @@ function Get-Metric {
         [string]$Sql
     )
 
-    $output = $null
-
-    Invoke-WithPgPassword -Password $database.DB_PASSWORD -Action {
-        $output = & $psql `
+    $output = Invoke-WithPgPassword -Password $database.DB_PASSWORD -Action {
+        & $psql `
             --host $database.DB_HOST `
             --port $database.DB_PORT `
             --username $database.DB_USER `
@@ -120,7 +118,17 @@ function Get-Metric {
         }
     }
 
-    return [int]($output | Select-Object -Last 1)
+    $metricValue = $output |
+        Where-Object {
+            -not [string]::IsNullOrWhiteSpace($_)
+        } |
+        Select-Object -Last 1
+
+    if ($null -eq $metricValue) {
+        throw "No se obtuvo una métrica válida desde la base $DatabaseName."
+    }
+
+    return [int]$metricValue
 }
 
 $metrics = @(
