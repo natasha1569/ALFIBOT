@@ -12,7 +12,7 @@ const registration = {
   confirmPassword: 'AlfiTest123',
 };
 
-async function request(path, options = {}) {
+const request = async (path, options = {}) => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers: {
@@ -23,15 +23,15 @@ async function request(path, options = {}) {
 
   const data = await response.json().catch(() => ({}));
   return { response, data };
-}
+};
 
-function assertStatus(actual, expected, label) {
+const assertStatus = (actual, expected, label) => {
   if (actual !== expected) {
     throw new Error(`${label}: se esperaba HTTP ${expected} y se recibió ${actual}.`);
   }
-}
+};
 
-async function run() {
+const run = async () => {
   const created = await request('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(registration),
@@ -139,7 +139,7 @@ async function run() {
   console.log(
     'AFB-309 OK: registro completo, validaciones, duplicado y login validados.',
   );
-}
+};
 
 run().catch((error) => {
   console.error('AFB-309 ERROR:', error.message);

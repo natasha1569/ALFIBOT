@@ -28,13 +28,13 @@ const RISK_CONFIG = {
 const ORDERED_RISKS = ['bajo', 'medio', 'alto'];
 
 
-export default function ResultCard({
+const ResultCard = ({
   result,
   onShare,
   onSpeak,
   isSpeaking = false,
   speechSupported = true,
-}) {
+}) => {
   if (!result) return null;
 
   if (result.allowed === false) {
@@ -200,4 +200,6 @@ export default function ResultCard({
       </div>
     </section>
   );
-}
+};
+
+export default ResultCard;

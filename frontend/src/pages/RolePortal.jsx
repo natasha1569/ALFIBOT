@@ -29,10 +29,10 @@ const PORTAL_CONFIG = {
   },
 };
 
-export default function RolePortal({
+const RolePortal = ({
   user,
   onLogout,
-}) {
+}) => {
   const portal = PORTAL_CONFIG[user.role];
   const [activeSection, setActiveSection] = useState(portal.defaultSection);
 
@@ -111,4 +111,6 @@ export default function RolePortal({
       </div>
     </main>
   );
-}
+};
+
+export default RolePortal;

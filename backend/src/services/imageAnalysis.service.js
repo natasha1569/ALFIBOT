@@ -33,7 +33,7 @@ export class ImageValidationError extends Error {
   }
 }
 
-function hasExpectedSignature(bytes, mimeType) {
+const hasExpectedSignature = (bytes, mimeType) => {
   if (mimeType === 'image/png') {
     const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
     return pngSignature.every((value, index) => bytes[index] === value);
@@ -52,9 +52,9 @@ function hasExpectedSignature(bytes, mimeType) {
   }
 
   return false;
-}
+};
 
-function decodeStrictBase64(value) {
+const decodeStrictBase64 = (value) => {
   const compactValue = value.replace(/\s+/g, '');
 
   if (!compactValue || compactValue.length % 4 !== 0) {
@@ -70,9 +70,9 @@ function decodeStrictBase64(value) {
   }
 
   return bytes;
-}
+};
 
-export function validateImageDataUri(content, options = {}) {
+export const validateImageDataUri = (content, options = {}) => {
   const maxBytes = Number(options.maxBytes || DEFAULT_MAX_IMAGE_BYTES);
   const dataUri = String(content || '').trim();
   const match = dataUri.match(
@@ -110,15 +110,15 @@ export function validateImageDataUri(content, options = {}) {
     mimeType,
     byteLength: bytes.length,
   };
-}
+};
 
-function normalizeText(value, maxLength = 500) {
+const normalizeText = (value, maxLength = 500) => {
   return typeof value === 'string'
     ? value.replace(/\r\n/g, '\n').trim().slice(0, maxLength)
     : '';
-}
+};
 
-function normalizeList(value) {
+const normalizeList = (value) => {
   if (!Array.isArray(value)) return [];
 
   const seen = new Set();
@@ -137,9 +137,9 @@ function normalizeList(value) {
   }
 
   return result;
-}
+};
 
-export function normalizeImageEvidence(rawEvidence = {}) {
+export const normalizeImageEvidence = (rawEvidence = {}) => {
   const source = rawEvidence && typeof rawEvidence === 'object'
     ? rawEvidence
     : {};
@@ -155,9 +155,9 @@ export function normalizeImageEvidence(rawEvidence = {}) {
     financialAmounts: normalizeList(source.financialAmounts),
     institutionalElements: normalizeList(source.institutionalElements),
   };
-}
+};
 
-export function buildImageExtractionInput(dataUri) {
+export const buildImageExtractionInput = (dataUri) => {
   return [
     {
       role: 'user',
@@ -174,15 +174,15 @@ export function buildImageExtractionInput(dataUri) {
       ],
     },
   ];
-}
+};
 
-function formatEvidenceList(items, emptyMessage) {
+const formatEvidenceList = (items, emptyMessage) => {
   return items.length > 0
     ? items.map((item) => `- ${item}`).join('\n')
     : `- ${emptyMessage}`;
-}
+};
 
-export function buildImageRiskContext(rawEvidence) {
+export const buildImageRiskContext = (rawEvidence) => {
   const evidence = normalizeImageEvidence(rawEvidence);
 
   return `
@@ -210,13 +210,13 @@ ${formatEvidenceList(evidence.visualSignals, 'No se registraron otras señales v
 
 Analiza esta evidencia junto con la imagen original. No inventes texto, entidades, condiciones ni elementos visuales que no estén presentes. Si el OCR no detectó texto, basa el análisis únicamente en los elementos visuales realmente observables.
   `.trim();
-}
+};
 
-export async function runImageAnalysisPipeline({
+export const runImageAnalysisPipeline = async ({
   content,
   extractEvidence,
   analyzeEvidence,
-}) {
+}) => {
   if (typeof extractEvidence !== 'function') {
     throw new TypeError('La etapa de extracción OCR no está configurada.');
   }
@@ -240,4 +240,4 @@ export async function runImageAnalysisPipeline({
     extractedText: evidence.extractedText,
     imageEvidence: evidence,
   };
-}
+};

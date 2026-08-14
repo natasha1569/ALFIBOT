@@ -1,12 +1,12 @@
 import './LandingPage.css';
 
-export default function LandingPage({ onStart, onLogin }) {
+const LandingPage = ({ onStart, onLogin }) => {
   return (
     <main className="alfi-landing">
       <header className="alfi-header">
         <div className="alfi-container alfi-nav">
           <div className="alfi-brand">
-            <img src="/alfi-robot-mini.png" alt="ALFI BOT" />
+            <img src="/alfi-robot-low.png" alt="ALFI BOT" />
             <div>
               <strong>ALFI BOT</strong>
               <span>Seguridad financiera inteligente</span>
@@ -162,4 +162,6 @@ export default function LandingPage({ onStart, onLogin }) {
       </section>
     </main>
   );
-}
+};
+
+export default LandingPage;

@@ -31,7 +31,7 @@ const formatDateTime = (value) => {
   }).format(date);
 };
 
-export default function AuditTrailPanel() {
+const AuditTrailPanel = () => {
   const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
   const [query, setQuery] = useState({ ...EMPTY_FILTERS, page: 1, pageSize: 20 });
   const [result, setResult] = useState({ events: [], pagination: {} });
@@ -234,4 +234,6 @@ export default function AuditTrailPanel() {
       </div>
     </section>
   );
-}
+};
+
+export default AuditTrailPanel;

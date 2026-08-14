@@ -23,13 +23,13 @@ const SENSITIVE_COLUMNS = [
   'vista_previa',
 ];
 
-function assert(condition, message) {
+const assert = (condition, message) => {
   if (!condition) {
     throw new Error(message);
   }
-}
+};
 
-async function run() {
+const run = async () => {
   const categoryColumn = await pool.query(`
     SELECT is_nullable
     FROM information_schema.columns
@@ -142,7 +142,7 @@ async function run() {
   console.log(
     'AFB-253 OK: taxonomía reducida, persistencia nullable, dos vistas BI y privacidad estructural validadas.',
   );
-}
+};
 
 run()
   .catch((error) => {

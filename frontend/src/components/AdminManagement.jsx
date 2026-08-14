@@ -1,6 +1,6 @@
 import UsersAdminPanel from './UsersAdminPanel.jsx';
 
-export default function AdminManagement({ currentUser }) {
+const AdminManagement = ({ currentUser }) => {
   return (
     <section className="mt-5" aria-labelledby="admin-users-title">
       <div className="mb-4">
@@ -14,4 +14,6 @@ export default function AdminManagement({ currentUser }) {
       <UsersAdminPanel currentUser={currentUser} />
     </section>
   );
-}
+};
+
+export default AdminManagement;

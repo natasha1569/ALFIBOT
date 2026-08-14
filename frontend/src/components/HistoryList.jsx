@@ -7,7 +7,7 @@ const TYPE_ICONS = { text: 'bi-card-text', link: 'bi-link-45deg', image: 'bi-ima
 const RISK_LABELS = { bajo: 'Bajo', medio: 'Medio', alto: 'Alto' };
 
 
-export default function HistoryList({ items, onClear, isLoading }) {
+const HistoryList = ({ items, onClear, isLoading }) => {
   return (
     <section className="history-card card border-0 shadow-sm">
       <div className="card-body p-4">
@@ -63,4 +63,6 @@ export default function HistoryList({ items, onClear, isLoading }) {
       </div>
     </section>
   );
-}
+};
+
+export default HistoryList;

@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
@@ -62,27 +64,37 @@ test('repository documentation defines the agreed naming conventions', async () 
   assert.match(editorConfig, /^root = true$/m);
   assert.match(editorConfig, /^indent_style = space$/m);
   assert.match(editorConfig, /^insert_final_newline = true$/m);
+  assert.match(editorConfig, /^end_of_line = lf$/m);
 });
 
-test('modules migrated by AFB-337 use arrow functions', async () => {
-  const standardizedFiles = [
-    'backend/src/config/aiPolicy.js',
-    'backend/src/config/permissions.js',
-    'backend/src/middlewares/auth.middleware.js',
-    'backend/src/middlewares/authorization.middleware.js',
-    'frontend/src/App.jsx',
-    'frontend/src/auth/authStorage.js',
-    'frontend/src/utils/fraudCategory.js',
-    'frontend/src/utils/history.js',
-    'frontend/src/utils/risk.js',
-  ];
+test('all tracked project JavaScript uses the arrow-function convention', async () => {
+  const codeFiles = execFileSync(
+    'git',
+    ['ls-files', '-z', '--', '*.js', '*.jsx', '*.mjs', '*.cjs'],
+    {
+      cwd: REPOSITORY_ROOT,
+      encoding: 'utf8',
+    },
+  )
+    .split('\0')
+    .filter(Boolean)
+    .filter((relativePath) => existsSync(
+      path.join(REPOSITORY_ROOT, relativePath),
+    ));
 
-  for (const relativePath of standardizedFiles) {
+  const functionKeyword = ['fun', 'ction'].join('');
+  const traditionalFunctionPattern = new RegExp(
+    `(^|[^A-Za-z0-9_$])(?:async\\s+)?${functionKeyword}(?:\\s*\\*)?(?:\\s+[A-Za-z_$][A-Za-z0-9_$]*)?\\s*\\(`,
+    'm',
+  );
+
+  for (const relativePath of codeFiles) {
     const content = await readRepositoryFile(relativePath);
+
     assert.doesNotMatch(
       content,
-      /^\s*(?:export\s+(?:default\s+)?)?(?:async\s+)?function\s+/m,
-      `${relativePath} still contains a traditional function declaration`,
+      traditionalFunctionPattern,
+      `${relativePath} contains a traditional function declaration or expression`,
     );
   }
 });

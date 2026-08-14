@@ -1,9 +1,9 @@
-export default function AdminModal({
+const AdminModal = ({
   open,
   title,
   children,
   onClose,
-}) {
+}) => {
   if (!open) return null;
 
   return (
@@ -32,4 +32,6 @@ export default function AdminModal({
       </div>
     </div>
   );
-}
+};
+
+export default AdminModal;

@@ -6,11 +6,11 @@ import {
   updateUserAdministration,
 } from './src/services/user.service.js';
 
-function assert(condition, message) {
+const assert = (condition, message) => {
   if (!condition) throw new Error(message);
-}
+};
 
-async function run() {
+const run = async () => {
   const client = await pool.connect();
   const suffix = Date.now();
   const email = `afb333.${suffix}@example.com`;
@@ -100,7 +100,7 @@ async function run() {
     client.release();
     await pool.end();
   }
-}
+};
 
 run().catch((error) => {
   console.error('AFB-333 ERROR:', error.message);

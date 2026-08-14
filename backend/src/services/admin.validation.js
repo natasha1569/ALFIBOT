@@ -1,7 +1,7 @@
 import { ALL_APP_ROLES } from '../config/permissions.js';
 
 
-export function parsePositiveInteger(value, fieldName = 'Identificador') {
+export const parsePositiveInteger = (value, fieldName = 'Identificador') => {
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed) || parsed <= 0) {
@@ -11,9 +11,9 @@ export function parsePositiveInteger(value, fieldName = 'Identificador') {
   }
 
   return parsed;
-}
+};
 
-export function parseOptionalBoolean(value, fieldName = 'Estado') {
+export const parseOptionalBoolean = (value, fieldName = 'Estado') => {
   if (value === '' || value === null || value === undefined) {
     return null;
   }
@@ -24,9 +24,9 @@ export function parseOptionalBoolean(value, fieldName = 'Estado') {
   const error = new Error(`${fieldName} no es válido.`);
   error.statusCode = 400;
   throw error;
-}
+};
 
-export function normalizeUserFilters(query = {}) {
+export const normalizeUserFilters = (query = {}) => {
   const search = typeof query.search === 'string' ? query.search.trim() : '';
   const role = typeof query.role === 'string' ? query.role.trim() : '';
   const active = parseOptionalBoolean(query.active, 'El estado de usuario');
@@ -44,9 +44,9 @@ export function normalizeUserFilters(query = {}) {
   }
 
   return { search, role, active };
-}
+};
 
-export function normalizeUserUpdate(body = {}) {
+export const normalizeUserUpdate = (body = {}) => {
   const role = typeof body.role === 'string' ? body.role.trim() : '';
   const active = parseOptionalBoolean(body.active, 'El estado de usuario');
 
@@ -63,4 +63,4 @@ export function normalizeUserUpdate(body = {}) {
   }
 
   return { role, active };
-}
+};

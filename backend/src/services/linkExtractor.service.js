@@ -25,7 +25,7 @@ const TRACKING_PARAM_NAMES = [
   'msclkid',
 ];
 
-function isPrivateIp(hostname) {
+const isPrivateIp = (hostname) => {
   const host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
 
   if (BLOCKED_HOSTS.has(host)) return true;
@@ -41,22 +41,22 @@ function isPrivateIp(hostname) {
   }
 
   return false;
-}
+};
 
-function isValidHttpUrl(rawUrl) {
+const isValidHttpUrl = (rawUrl) => {
   try {
     const parsed = new URL(rawUrl);
     return ['http:', 'https:'].includes(parsed.protocol) && !isPrivateIp(parsed.hostname);
   } catch {
     return false;
   }
-}
+};
 
-function normalizeWhitespace(text) {
+const normalizeWhitespace = (text) => {
   return String(text || '').replace(/\s+/g, ' ').trim();
-}
+};
 
-function decodeBasicEntities(text) {
+const decodeBasicEntities = (text) => {
   return String(text || '')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -72,30 +72,30 @@ function decodeBasicEntities(text) {
         return ' ';
       }
     });
-}
+};
 
-function getFirstMatch(html, patterns) {
+const getFirstMatch = (html, patterns) => {
   for (const pattern of patterns) {
     const match = html.match(pattern);
     if (match?.[1]) return normalizeWhitespace(decodeBasicEntities(match[1]));
   }
   return '';
-}
+};
 
-function extractTitle(html) {
+const extractTitle = (html) => {
   return getFirstMatch(html, [/<title[^>]*>([\s\S]*?)<\/title>/i]);
-}
+};
 
-function extractDescription(html) {
+const extractDescription = (html) => {
   return getFirstMatch(html, [
     /<meta[^>]+name=["']description["'][^>]+content=["']([\s\S]*?)["'][^>]*>/i,
     /<meta[^>]+content=["']([\s\S]*?)["'][^>]+name=["']description["'][^>]*>/i,
     /<meta[^>]+property=["']og:description["'][^>]+content=["']([\s\S]*?)["'][^>]*>/i,
     /<meta[^>]+content=["']([\s\S]*?)["'][^>]+property=["']og:description["'][^>]*>/i,
   ]);
-}
+};
 
-function extractVisibleText(html) {
+const extractVisibleText = (html) => {
   const withoutNoise = String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -108,9 +108,9 @@ function extractVisibleText(html) {
     .replace(/<[^>]+>/g, ' ');
 
   return normalizeWhitespace(decodeBasicEntities(withBreaks)).slice(0, MAX_TEXT_CHARS);
-}
+};
 
-function extractImportantLinks(html, baseUrl) {
+const extractImportantLinks = (html, baseUrl) => {
   const links = [];
   const regex = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let match;
@@ -167,14 +167,14 @@ function extractImportantLinks(html, baseUrl) {
   }
 
   return links;
-}
+};
 
-function findMatches(text, keywords) {
+const findMatches = (text, keywords) => {
   const normalized = String(text || '').toLowerCase();
   return keywords.filter((keyword) => normalized.includes(keyword.toLowerCase()));
-}
+};
 
-function getUrlTechnicalContext(rawUrl) {
+const getUrlTechnicalContext = (rawUrl) => {
   let parsed = null;
   try {
     parsed = new URL(rawUrl);
@@ -232,9 +232,9 @@ function getUrlTechnicalContext(rawUrl) {
     technicalSignals,
     suspiciousSignals,
   };
-}
+};
 
-function buildSignals({ url, finalUrl, text, hostname, title, description, importantLinks }) {
+const buildSignals = ({ url, finalUrl, text, hostname, title, description, importantLinks }) => {
   const urlContext = getUrlTechnicalContext(finalUrl || url || '');
   const combined = `${url} ${finalUrl} ${hostname} ${title} ${description} ${text} ${importantLinks
     .map((l) => `${l.label} ${l.url}`)
@@ -328,9 +328,9 @@ function buildSignals({ url, finalUrl, text, hostname, title, description, impor
     institutionalSignals: findMatches(combined, institutionalKeywords),
     suspiciousSignals: Array.from(new Set(suspiciousSignals)),
   };
-}
+};
 
-function buildFallbackContext({ url, reason }) {
+const buildFallbackContext = ({ url, reason }) => {
   let parsed = null;
   try {
     parsed = new URL(url);
@@ -355,9 +355,9 @@ function buildFallbackContext({ url, reason }) {
     institutionalSignals: [],
     suspiciousSignals: urlContext.suspiciousSignals,
   };
-}
+};
 
-export async function extractLinkContext(rawUrl) {
+export const extractLinkContext = async (rawUrl) => {
   const url = String(rawUrl || '').trim();
 
   if (!isValidHttpUrl(url)) {
@@ -428,4 +428,4 @@ export async function extractLinkContext(rawUrl) {
   } finally {
     clearTimeout(timeout);
   }
-}
+};

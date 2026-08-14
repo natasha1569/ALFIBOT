@@ -16,7 +16,7 @@ const ROLE_OPTIONS = [
   { value: 'usuario', label: 'Usuario' },
 ];
 
-export default function UsersAdminPanel({ currentUser }) {
+const UsersAdminPanel = ({ currentUser }) => {
   const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [users, setUsers] = useState([]);
@@ -27,7 +27,7 @@ export default function UsersAdminPanel({ currentUser }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  async function loadUsers(nextFilters = filters) {
+  const loadUsers = async (nextFilters = filters) => {
     setLoading(true);
     setError('');
 
@@ -40,7 +40,7 @@ export default function UsersAdminPanel({ currentUser }) {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     loadUsers(filters);
@@ -121,22 +121,22 @@ export default function UsersAdminPanel({ currentUser }) {
     },
   ], []);
 
-  function handleFilterChange(event) {
+  const handleFilterChange = (event) => {
     const { name, value } = event.target;
     setDraftFilters((current) => ({ ...current, [name]: value }));
-  }
+  };
 
-  function applyFilters(event) {
+  const applyFilters = (event) => {
     event.preventDefault();
     setFilters({ ...draftFilters });
-  }
+  };
 
-  function clearFilters() {
+  const clearFilters = () => {
     setDraftFilters(EMPTY_FILTERS);
     setFilters(EMPTY_FILTERS);
-  }
+  };
 
-  function openEdit(user) {
+  const openEdit = (user) => {
     setEditing(user);
     setForm({
       role: user.role,
@@ -144,17 +144,17 @@ export default function UsersAdminPanel({ currentUser }) {
     });
     setError('');
     setMessage('');
-  }
+  };
 
-  function handleFormChange(event) {
+  const handleFormChange = (event) => {
     const { name, value, type, checked } = event.target;
     setForm((current) => ({
       ...current,
       [name]: type === 'checkbox' ? checked : value,
     }));
-  }
+  };
 
-  async function saveUser(event) {
+  const saveUser = async (event) => {
     event.preventDefault();
     setSaving(true);
     setError('');
@@ -170,7 +170,7 @@ export default function UsersAdminPanel({ currentUser }) {
     } finally {
       setSaving(false);
     }
-  }
+  };
 
   const userFormFields = [
     {
@@ -244,4 +244,6 @@ export default function UsersAdminPanel({ currentUser }) {
       </AdminModal>
     </section>
   );
-}
+};
+
+export default UsersAdminPanel;

@@ -1,6 +1,6 @@
 # Convenciones de desarrollo de ALFI BOT
 
-Este documento resume las reglas obligatorias para cambios nuevos. Las decisiones y sus motivos se conservan en inglés dentro de [`docs/adr`](docs/adr/README.md).
+Este documento resume las reglas obligatorias del repositorio. Las decisiones de arquitectura vigentes se conservan en inglés dentro de [`/ADRs`](ADRs/).
 
 ## Convenciones generales
 
@@ -13,13 +13,13 @@ Este documento resume las reglas obligatorias para cambios nuevos. Las decisione
 | Identificadores PostgreSQL | `snake_case` | `fraud_category` |
 | Variables de entorno | `UPPER_SNAKE_CASE` | `AUTH_TOKEN_SECRET` |
 | Constantes globales | `UPPER_SNAKE_CASE` | `ROLE_PERMISSIONS` |
-| ADRs | `ADR-NNNN-kebab-case.md` | `ADR-0003-routing-authentication-rbac.md` |
+| ADRs | `<N>.Decision-<Topic>.md` | `4.Decision-Authentication-RBAC.md` |
 
 Todo JavaScript propio usa ES Modules (`import`/`export`). El código asíncrono nuevo usa `async`/`await` en lugar de cadenas de promesas cuando mejora la lectura.
 
 ## Funciones JavaScript y React
 
-Las funciones propias nuevas se escriben como *arrow functions*:
+Las funciones propias se escriben como *arrow functions* cuando la sintaxis de JavaScript lo permite:
 
 ```js
 export const normalizeValue = (value) => String(value || '').trim();
@@ -33,9 +33,9 @@ const ExampleCard = ({ title }) => <article>{title}</article>;
 export default ExampleCard;
 ```
 
-Una declaración `function` solo se acepta cuando existe una razón técnica concreta, por ejemplo una función generadora o una necesidad real de *hoisting*. La excepción debe explicarse junto al código y en el Pull Request.
+Las declaraciones y expresiones tradicionales con la palabra clave `function` no se usan en código propio. Los constructores y métodos de clase u objeto conservan su sintaxis cuando JavaScript la requiere. Cualquier excepción real —por ejemplo un generador— debe justificarse técnicamente junto al código y en el Pull Request.
 
-El código anterior se migra de forma incremental. Una conversión es segura y razonable cuando no depende de `this`, `arguments`, `new`, *hoisting* o semántica de generador, y está cubierta por pruebas o por una compilación verificable. No se mezclan refactors masivos con cambios funcionales.
+Los refactors deben preservar contratos, comportamiento, rutas, reglas de negocio, autenticación, autorización y persistencia. No se mezclan refactors estructurales con cambios funcionales no relacionados.
 
 ## Routing, autenticación y RBAC
 
@@ -45,7 +45,7 @@ El código anterior se migra de forma incremental. Una conversión es segura y r
 - El backend autentica el token y autoriza cada recurso mediante roles o permisos.
 - Los roles funcionales canónicos son `usuario`, `auditor` y `administrador`.
 
-La decisión completa está en [ADR-0003](docs/adr/ADR-0003-routing-authentication-rbac.md).
+La decisión completa está en [4.Decision-Authentication-RBAC.md](ADRs/4.Decision-Authentication-RBAC.md).
 
 ## PostgreSQL y variables de entorno
 
@@ -58,11 +58,11 @@ La decisión completa está en [ADR-0003](docs/adr/ADR-0003-routing-authenticati
 
 Se crea o reemplaza un ADR cuando una decisión afecta la arquitectura, seguridad, contratos entre componentes, persistencia, despliegue o una convención transversal.
 
-1. Copiar la estructura descrita en [`docs/adr/README.md`](docs/adr/README.md).
-2. Reservar el siguiente identificador secuencial de cuatro dígitos.
+1. Reservar el siguiente número secuencial disponible dentro de `/ADRs`.
+2. Nombrar el archivo como `<N>.Decision-<Topic>.md`.
 3. Escribir el ADR en inglés.
-4. Indicar estado, contexto, decisión y consecuencias.
-5. Actualizar el índice de ADRs.
+4. Incluir un título, una única línea `Date: YYYY-MM-DD` y decisiones numeradas.
+5. Mantener el formato simplificado vigente; no añadir secciones `Status`, `Context`, `Decision` o `Consequences`.
 6. Referenciar Jira y el ADR en el Pull Request cuando corresponda.
 
 Los ADRs aceptados no se reescriben para cambiar una decisión. Se crea un ADR nuevo que indique cuál queda reemplazado.

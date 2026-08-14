@@ -1,3 +1,5 @@
+import { normalizeSpanishRiskLevel } from '../utils/risk.js';
+
 const APP_NAME = 'ALFI BOT';
 
 const RISK_LABELS = {
@@ -36,56 +38,48 @@ const ALFI_PDF_MESSAGES = {
   alto: 'ALFI BOT detectó señales críticas. Evita entregar dinero, documentos o datos personales sin verificar la entidad en fuentes oficiales.',
 };
 
-function normalizeRiskLevel(value) {
-  const normalized = String(value || '').toLowerCase().trim();
-  if (normalized.includes('alto')) return 'alto';
-  if (normalized.includes('medio')) return 'medio';
-  if (normalized.includes('bajo')) return 'bajo';
-  return 'medio';
-}
-
-function getRiskLabel(value) {
-  const level = normalizeRiskLevel(value);
+const getRiskLabel = (value) => {
+  const level = normalizeSpanishRiskLevel(value);
   return RISK_LABELS[level] || 'Riesgo medio';
-}
+};
 
-function getAlfiImageForRisk(value) {
-  const level = normalizeRiskLevel(value);
+const getAlfiImageForRisk = (value) => {
+  const level = normalizeSpanishRiskLevel(value);
   return ALFI_IMAGES_BY_RISK[level] || ALFI_IMAGES_BY_RISK.medio;
-}
+};
 
-function getAlfiPdfMessage(value) {
-  const level = normalizeRiskLevel(value);
+const getAlfiPdfMessage = (value) => {
+  const level = normalizeSpanishRiskLevel(value);
   return ALFI_PDF_MESSAGES[level] || ALFI_PDF_MESSAGES.medio;
-}
+};
 
-function getContentTypeLabel(type) {
+const getContentTypeLabel = (type) => {
   const labels = {
     text: 'Texto ingresado por el usuario',
     link: 'Enlace o página web',
     image: 'Imagen o captura de pantalla',
   };
   return labels[type] || 'Contenido analizado';
-}
+};
 
-function formatDate(value = new Date()) {
+const formatDate = (value = new Date()) => {
   return new Intl.DateTimeFormat('es-EC', {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
-}
+};
 
-function truncate(value, maxLength = 900) {
+const truncate = (value, maxLength = 900) => {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength).trim()}…`;
-}
+};
 
-function numberedList(items = []) {
+const numberedList = (items = []) => {
   return items.map((item, index) => `${index + 1}. ${item}`).join('\n');
-}
+};
 
-function getSourcePreview(result) {
+const getSourcePreview = (result) => {
   const source = result?.source;
   if (!source) return 'No se registró una vista previa del contenido original.';
 
@@ -98,10 +92,10 @@ function getSourcePreview(result) {
   }
 
   return truncate(source.content, 1100);
-}
+};
 
-export function formatShareSummary(result) {
-  const riskLevel = normalizeRiskLevel(result?.riskLevel);
+export const formatShareSummary = (result) => {
+  const riskLevel = normalizeSpanishRiskLevel(result?.riskLevel);
   const lines = [
     'INFORME PREVENTIVO - ALFI BOT',
     '',
@@ -130,25 +124,25 @@ export function formatShareSummary(result) {
   );
 
   return lines.join('\n');
-}
+};
 
-export function buildWhatsappMessage(result) {
+export const buildWhatsappMessage = (result) => {
   // WhatsApp debe usar el mismo formato completo y ordenado que "Copiar resumen".
   // Así el mensaje compartido conserva nivel de riesgo, fecha, tipo de contenido,
   // resumen, señales, recomendaciones, contenido analizado y advertencia.
   return formatShareSummary(result);
-}
+};
 
-export function buildWhatsappUrl(result) {
+export const buildWhatsappUrl = (result) => {
   const message = buildWhatsappMessage(result);
   return `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-}
+};
 
-export function openWhatsappWeb(
+export const openWhatsappWeb = (
   result,
   targetWindow = null,
   browserWindow = globalThis.window,
-) {
+) => {
   const url = buildWhatsappUrl(result);
 
   if (targetWindow && !targetWindow.closed) {
@@ -162,12 +156,12 @@ export function openWhatsappWeb(
 
   browserWindow.open(url, '_blank', 'noopener,noreferrer');
   return url;
-}
+};
 
-export async function copyShareSummary(
+export const copyShareSummary = async (
   result,
   clipboard = globalThis.navigator?.clipboard,
-) {
+) => {
   if (!clipboard?.writeText) {
     throw new Error('El portapapeles no está disponible en este navegador.');
   }
@@ -175,18 +169,18 @@ export async function copyShareSummary(
   const text = formatShareSummary(result);
   await clipboard.writeText(text);
   return text;
-}
+};
 
-function loadImage(src) {
+const loadImage = (src) => {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
     image.onerror = () => reject(new Error('No se pudo cargar la imagen para el PDF.'));
     image.src = src;
   });
-}
+};
 
-async function normalizeImageForPdf(dataUrl) {
+const normalizeImageForPdf = async (dataUrl) => {
   const image = await loadImage(dataUrl);
   const maxWidth = 1050;
   const maxHeight = 720;
@@ -208,19 +202,19 @@ async function normalizeImageForPdf(dataUrl) {
     width,
     height,
   };
-}
+};
 
-function escapeHtml(value) {
+const escapeHtml = (value) => {
   return String(value || '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
-}
+};
 
-function openPrintableReport(result) {
-  const riskLevel = normalizeRiskLevel(result?.riskLevel);
+const openPrintableReport = (result) => {
+  const riskLevel = normalizeSpanishRiskLevel(result?.riskLevel);
   const riskLabel = RISK_LABELS[riskLevel];
   const riskColor = riskLevel === 'alto' ? '#dc2626' : riskLevel === 'medio' ? '#f59e0b' : '#16a34a';
   const riskTint = riskLevel === 'alto' ? '#fee2e2' : riskLevel === 'medio' ? '#fef3c7' : '#dcfce7';
@@ -284,9 +278,9 @@ function openPrintableReport(result) {
   reportWindow.document.open();
   reportWindow.document.write(html);
   reportWindow.document.close();
-}
+};
 
-function loadJsPdfFromCdn() {
+const loadJsPdfFromCdn = () => {
   return new Promise((resolve, reject) => {
     if (window.jspdf?.jsPDF) {
       resolve(window.jspdf.jsPDF);
@@ -311,9 +305,9 @@ function loadJsPdfFromCdn() {
     script.onerror = () => reject(new Error('No se pudo cargar jsPDF desde CDN.'));
     document.head.appendChild(script);
   });
-}
+};
 
-function sanitizeFilename(value) {
+const sanitizeFilename = (value) => {
   return String(value || 'informe-alfi-bot')
     .toLowerCase()
     .normalize('NFD')
@@ -321,22 +315,22 @@ function sanitizeFilename(value) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
-}
+};
 
-export function buildPdfFilename(
+export const buildPdfFilename = (
   riskLevel,
   date = new Date(),
-) {
-  const normalizedRisk = normalizeRiskLevel(riskLevel);
+) => {
+  const normalizedRisk = normalizeSpanishRiskLevel(riskLevel);
   const parsedDate = date instanceof Date ? date : new Date(date);
   const safeDate = Number.isNaN(parsedDate.getTime())
     ? new Date().toISOString().slice(0, 10)
     : parsedDate.toISOString().slice(0, 10);
 
   return `${sanitizeFilename(`alfi-bot-${normalizedRisk}-${safeDate}`)}.pdf`;
-}
+};
 
-export async function downloadReportPdf(result) {
+export const downloadReportPdf = async (result) => {
   try {
     const JsPDF = await loadJsPdfFromCdn();
     const doc = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
@@ -345,7 +339,7 @@ export async function downloadReportPdf(result) {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const contentWidth = pageWidth - marginX * 2;
-    const riskLevel = normalizeRiskLevel(result?.riskLevel);
+    const riskLevel = normalizeSpanishRiskLevel(result?.riskLevel);
     const riskColor = RISK_COLORS[riskLevel] || RISK_COLORS.medio;
     const riskTint = RISK_TINTS[riskLevel] || RISK_TINTS.medio;
 
@@ -508,4 +502,4 @@ export async function downloadReportPdf(result) {
     openPrintableReport(result);
     return { mode: 'print', error };
   }
-}
+};
