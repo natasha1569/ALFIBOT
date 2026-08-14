@@ -9,39 +9,37 @@ const BACKEND_ROOT = path.resolve(
   '..',
 );
 const REPOSITORY_ROOT = path.resolve(BACKEND_ROOT, '..');
-const ADR_DIRECTORY = path.join(REPOSITORY_ROOT, 'docs', 'adr');
+const ADR_DIRECTORY = path.join(REPOSITORY_ROOT, 'ADRs');
 
 const readRepositoryFile = (relativePath) => (
   readFile(path.join(REPOSITORY_ROOT, relativePath), 'utf8')
 );
 
-test('ADRs use sequential identifiers and the required English structure', async () => {
+test('ADRs use the approved root folder and simplified decision format', async () => {
   const entries = await readdir(ADR_DIRECTORY);
   const adrFiles = entries
-    .filter((name) => /^ADR-\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$/.test(name))
-    .sort();
+    .filter((name) => /^\d+\.Decision-[A-Za-z0-9-]+\.md$/.test(name))
+    .sort((left, right) => Number.parseInt(left, 10) - Number.parseInt(right, 10));
 
   const requiredAdrFiles = [
-    'ADR-0001-single-company-scope.md',
-    'ADR-0002-javascript-react-code-conventions.md',
-    'ADR-0003-routing-authentication-rbac.md',
-    'ADR-0004-fraud-category-taxonomy.md',
+    '1.Decision-Frontend.md',
+    '2.Decision-Backend.md',
+    '3.Decision-Database.md',
+    '4.Decision-Authentication-RBAC.md',
   ];
 
-  for (const requiredFile of requiredAdrFiles) {
-    assert.ok(adrFiles.includes(requiredFile), `${requiredFile} is missing`);
-  }
+  assert.deepEqual(adrFiles, requiredAdrFiles);
 
-  for (const [index, fileName] of adrFiles.entries()) {
-    const expectedId = String(index + 1).padStart(4, '0');
+  for (const fileName of adrFiles) {
     const content = await readFile(path.join(ADR_DIRECTORY, fileName), 'utf8');
+    const dates = content.match(/^Date: \d{4}-\d{2}-\d{2}$/gm) || [];
+    const decisions = content.match(/^\d+\. .+$/gm) || [];
 
-    assert.match(content, new RegExp(`^# ADR-${expectedId}: .+`, 'm'));
-    assert.match(content, /^- Status: (Proposed|Accepted|Deprecated|Superseded by ADR-\d{4})$/m);
-    assert.match(content, /^- Date: \d{4}-\d{2}-\d{2}$/m);
-    assert.match(content, /^## Context$/m);
-    assert.match(content, /^## Decision$/m);
-    assert.match(content, /^## Consequences$/m);
+    assert.match(content, /^# .+$/m);
+    assert.equal(dates.length, 1, `${fileName} must contain exactly one date`);
+    assert.ok(decisions.length >= 3, `${fileName} must contain numbered decisions`);
+    assert.doesNotMatch(content, /^Status:/m);
+    assert.doesNotMatch(content, /^## (Context|Decision|Consequences)$/m);
   }
 });
 
