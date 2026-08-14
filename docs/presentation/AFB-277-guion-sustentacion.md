@@ -112,8 +112,28 @@ Durante el proyecto se implementaron funcionalidades de análisis, almacenamient
 
 El desarrollo permitió aplicar de manera práctica los conocimientos adquiridos durante el semestre y trabajar de forma organizada mediante tareas y control de versiones.
 
-## 9. Cierre
+## 9. Gestión del proyecto
 
-Con esto finalizamos la presentación técnica de ALFI BOT.
+ALFI BOT fue desarrollado utilizando Scrum como metodología de trabajo.
 
-Muchas gracias por su atención. Estamos disponibles para responder sus preguntas.
+Para la organización y seguimiento del proyecto se utilizaron:
+
+- Jira para gestionar historias de usuario, tareas, responsables, prioridades y estados.
+- Confluence para documentar arquitectura, Scrum, pruebas y evidencias.
+- Git y GitHub para el control de versiones mediante ramas, commits y Pull Requests.
+
+Durante el proyecto se registraron actividades correspondientes a Sprint Planning, Daily Scrum, Sprint Review y Sprint Retrospective.
+
+**Transición:**  
+Además del funcionamiento actual del sistema, ALFI BOT contempla una visión de crecimiento a mediano plazo.
+
+## 10. Visión de monetización
+
+ALFI BOT busca mantener su utilidad preventiva para los usuarios.
+
+Como visión de monetización a mediano plazo, el proyecto contempla publicidad basada en tendencias agregadas de uso y riesgo.
+
+Esta estrategia deberá respetar la privacidad de los usuarios y no implicará compartir contraseñas, credenciales ni información personal sensible.
+
+**Transición:**  
+Con esto podemos resumir los principales resultados obtenidos durante el desarrollo de ALFI BOT.
