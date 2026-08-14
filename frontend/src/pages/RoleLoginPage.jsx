@@ -20,11 +20,11 @@ const PORTALS = {
   },
 };
 
-export default function RoleLoginPage({
+const RoleLoginPage = ({
   role,
   onLogin,
   onBack,
-}) {
+}) => {
   const portal = PORTALS[role];
   const [credentials, setCredentials] = useState({
     email: '',
@@ -33,7 +33,7 @@ export default function RoleLoginPage({
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(event) {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
     setIsLoading(true);
@@ -47,7 +47,7 @@ export default function RoleLoginPage({
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <main className="alfi-login-page">
@@ -122,4 +122,6 @@ export default function RoleLoginPage({
       </section>
     </main>
   );
-}
+};
+
+export default RoleLoginPage;

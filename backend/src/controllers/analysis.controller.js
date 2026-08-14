@@ -20,7 +20,7 @@ const MAX_LINK_LENGTH = 2000;
  * Convierte el nivel de riesgo generado por la IA
  * al formato permitido por PostgreSQL.
  */
-function normalizeRiskLevel(riskLevel) {
+const normalizeRiskLevel = (riskLevel) => {
   const value = String(riskLevel || '').trim().toLowerCase();
 
   const riskLevels = {
@@ -33,12 +33,12 @@ function normalizeRiskLevel(riskLevel) {
   };
 
   return riskLevels[value] || 'medio';
-}
+};
 
 /**
  * Crea una vista previa corta para mostrar en el historial.
  */
-function createPreview(type, content) {
+const createPreview = (type, content) => {
   if (type === 'image') {
     return 'Imagen analizada';
   }
@@ -48,13 +48,13 @@ function createPreview(type, content) {
   return cleanedContent.length > 200
     ? `${cleanedContent.substring(0, 200)}...`
     : cleanedContent;
-}
+};
 
 /**
  * POST /api/analysis
  * Analiza el contenido con IA y guarda el resultado en PostgreSQL.
  */
-export async function analyzeContent(req, res) {
+export const analyzeContent = async (req, res) => {
   let client;
 
   try {
@@ -255,13 +255,13 @@ export async function analyzeContent(req, res) {
       client.release();
     }
   }
-}
+};
 
 /**
  * GET /api/analysis/history
  * Obtiene el historial desde PostgreSQL.
  */
-export async function getHistory(req, res) {
+export const getHistory = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
@@ -312,7 +312,7 @@ export async function getHistory(req, res) {
       publicMessage: 'No se pudo obtener el historial. Intenta nuevamente.',
     });
   }
-}
+};
 
 /**
  * DELETE /api/analysis/history
@@ -321,7 +321,7 @@ export async function getHistory(req, res) {
  * Las señales y recomendaciones se eliminan automáticamente
  * gracias a ON DELETE CASCADE.
  */
-export async function clearHistory(req, res) {
+export const clearHistory = async (req, res) => {
   try {
     const result = await pool.query(
       `
@@ -343,4 +343,4 @@ export async function clearHistory(req, res) {
       publicMessage: 'No se pudo borrar el historial. Intenta nuevamente.',
     });
   }
-}
+};

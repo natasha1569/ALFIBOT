@@ -1,22 +1,22 @@
 import crypto from 'crypto';
 import { authTokenConfig } from '../config/auth.config.js';
 
-function encode(value) {
+const encode = (value) => {
   return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
-}
+};
 
-function decode(value) {
+const decode = (value) => {
   return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
-}
+};
 
-function signPayload(encodedPayload) {
+const signPayload = (encodedPayload) => {
   return crypto
     .createHmac('sha256', authTokenConfig.secret)
     .update(encodedPayload)
     .digest('base64url');
-}
+};
 
-export function createAuthToken(user) {
+export const createAuthToken = (user) => {
   const issuedAt = Math.floor(Date.now() / 1000);
   const payload = {
     sub: user.id,
@@ -30,9 +30,9 @@ export function createAuthToken(user) {
   const encodedPayload = encode(payload);
   const signature = signPayload(encodedPayload);
   return `${encodedPayload}.${signature}`;
-}
+};
 
-export function verifyAuthToken(token) {
+export const verifyAuthToken = (token) => {
   if (typeof token !== 'string' || !token.includes('.')) {
     throw new Error('Token inválido.');
   }
@@ -57,4 +57,4 @@ export function verifyAuthToken(token) {
   }
 
   return payload;
-}
+};

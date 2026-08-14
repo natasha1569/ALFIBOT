@@ -8,11 +8,11 @@ import {
   requireRoles,
 } from './src/middlewares/authorization.middleware.js';
 
-function assert(condition, message) {
+const assert = (condition, message) => {
   if (!condition) throw new Error(message);
-}
+};
 
-function executeMiddleware(middleware, user) {
+const executeMiddleware = (middleware, user) => {
   let statusCode = 200;
   let responseBody = null;
   let nextCalled = false;
@@ -34,7 +34,7 @@ function executeMiddleware(middleware, user) {
   });
 
   return { statusCode, responseBody, nextCalled };
-}
+};
 
 const matrixCases = [
   [APP_ROLES.USER, PERMISSIONS.ANALYZE_CONTENT, true],

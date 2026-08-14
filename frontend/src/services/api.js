@@ -33,7 +33,7 @@ export const createApiError = (data, status) => {
   );
 };
 
-async function request(path, options = {}) {
+const request = async (path, options = {}) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -80,60 +80,60 @@ async function request(path, options = {}) {
   }
 
   return data;
-}
+};
 
-export function analyzeContent({ type, content }) {
+export const analyzeContent = ({ type, content }) => {
   return request('/api/analysis', {
     method: 'POST',
     body: JSON.stringify({ type, content }),
   });
-}
+};
 
-export function fetchHistory() {
+export const fetchHistory = () => {
   return request('/api/analysis/history');
-}
+};
 
-export function clearHistory() {
+export const clearHistory = () => {
   return request('/api/analysis/history', { method: 'DELETE' });
-}
+};
 
-export function login(credentials) {
+export const login = (credentials) => {
   return request('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: '' },
     body: JSON.stringify(credentials),
   });
-}
+};
 
-export function loginAdmin(credentials) {
+export const loginAdmin = (credentials) => {
   return request('/api/auth/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: '' },
     body: JSON.stringify(credentials),
   });
-}
+};
 
-export function loginAuditor(credentials) {
+export const loginAuditor = (credentials) => {
   return request('/api/auth/auditor/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: '' },
     body: JSON.stringify(credentials),
   });
-}
+};
 
-export function registerUser(registration) {
+export const registerUser = (registration) => {
   return request('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: '' },
     body: JSON.stringify(registration),
   });
-}
+};
 
-export function fetchCurrentUser() {
+export const fetchCurrentUser = () => {
   return request('/api/auth/me');
-}
+};
 
-export function fetchFraudTrends(filters = {}) {
+export const fetchFraudTrends = (filters = {}) => {
   const params = new URLSearchParams();
 
   Object.entries(filters).forEach(([key, value]) => {
@@ -142,13 +142,13 @@ export function fetchFraudTrends(filters = {}) {
 
   const query = params.toString();
   return request(`/api/reporting/fraud-trends${query ? `?${query}` : ''}`);
-}
+};
 
-export function fetchAuditEvents(filters = {}) {
+export const fetchAuditEvents = (filters = {}) => {
   return request(`/api/audit/events${buildQuery(filters)}`);
-}
+};
 
-function buildQuery(filters = {}) {
+const buildQuery = (filters = {}) => {
   const params = new URLSearchParams();
 
   Object.entries(filters).forEach(([key, value]) => {
@@ -159,15 +159,15 @@ function buildQuery(filters = {}) {
 
   const query = params.toString();
   return query ? `?${query}` : '';
-}
+};
 
-export function fetchAdminUsers(filters = {}) {
+export const fetchAdminUsers = (filters = {}) => {
   return request(`/api/admin/users${buildQuery(filters)}`);
-}
+};
 
-export function updateAdminUser(userId, changes) {
+export const updateAdminUser = (userId, changes) => {
   return request(`/api/admin/users/${userId}`, {
     method: 'PATCH',
     body: JSON.stringify(changes),
   });
-}
+};

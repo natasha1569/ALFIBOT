@@ -1,28 +1,22 @@
+import { normalizeSpanishRiskLevel } from '../utils/risk.js';
+
 const RISK_LABELS = {
   bajo: 'Riesgo bajo',
   medio: 'Riesgo medio',
   alto: 'Riesgo alto',
 };
 
-function normalizeRiskLevel(value) {
-  const normalized = String(value || '').toLowerCase().trim();
-  if (normalized.includes('alto')) return 'alto';
-  if (normalized.includes('medio')) return 'medio';
-  if (normalized.includes('bajo')) return 'bajo';
-  return 'medio';
-}
-
-export default function ShareModal({
+const ShareModal = ({
   result,
   isWorking,
   onClose,
   onWhatsapp,
   onDownloadPdf,
   onCopySummary,
-}) {
+}) => {
   if (!result) return null;
 
-  const riskLevel = normalizeRiskLevel(result.riskLevel);
+  const riskLevel = normalizeSpanishRiskLevel(result.riskLevel);
 
   return (
     <div className="share-modal-backdrop" role="presentation" onMouseDown={onClose}>
@@ -101,4 +95,6 @@ export default function ShareModal({
       </section>
     </div>
   );
-}
+};
+
+export default ShareModal;

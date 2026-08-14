@@ -91,20 +91,20 @@ const FINANCIAL_KEYWORDS = [
 let cachedClient = null;
 let cachedApiKey = null;
 
-function getClient(apiKey) {
+const getClient = (apiKey) => {
   if (!cachedClient || cachedApiKey !== apiKey) {
     cachedClient = new OpenAI({ apiKey, timeout: OPENAI_TIMEOUT_MS });
     cachedApiKey = apiKey;
   }
   return cachedClient;
-}
+};
 
-function hasFinancialSignal(text) {
+const hasFinancialSignal = (text) => {
   const normalized = String(text || '').toLowerCase();
   return FINANCIAL_KEYWORDS.some((keyword) => normalized.includes(keyword));
-}
+};
 
-function isClearlyOutOfScope({ type, content, linkContext }) {
+const isClearlyOutOfScope = ({ type, content, linkContext }) => {
   const normalized = String(content || '').trim().toLowerCase();
 
   if (!normalized) return true;
@@ -121,9 +121,9 @@ function isClearlyOutOfScope({ type, content, linkContext }) {
   if (type === 'link') return false;
 
   return false;
-}
+};
 
-function formatLinkContext(linkContext) {
+const formatLinkContext = (linkContext) => {
   if (!linkContext) return 'No se proporcionó contexto extraído del enlace.';
 
   const importantLinks = (linkContext.importantLinks || [])
@@ -155,9 +155,9 @@ TEXTO VISIBLE EXTRAÍDO:
 ${linkContext.visibleText || 'No se logró extraer texto visible.'}
 """
 `.trim();
-}
+};
 
-function buildPromptText({ type, content, linkContext, imageRiskContext }) {
+const buildPromptText = ({ type, content, linkContext, imageRiskContext }) => {
   if (type === 'text') {
     return `Analiza el siguiente texto de una publicación, mensaje o anuncio financiero:\n\n"""${content}"""`;
   }
@@ -182,9 +182,9 @@ ${imageRiskContext || 'No se proporcionó evidencia OCR adicional.'}`;
   }
 
   throw new Error(`Tipo de contenido no soportado: ${type}`);
-}
+};
 
-function buildResponsesInput({ type, content, linkContext, imageRiskContext }) {
+const buildResponsesInput = ({ type, content, linkContext, imageRiskContext }) => {
   const parts = [
     {
       type: 'input_text',
@@ -212,9 +212,9 @@ function buildResponsesInput({ type, content, linkContext, imageRiskContext }) {
       content: parts,
     },
   ];
-}
+};
 
-function extractOutputText(response) {
+const extractOutputText = (response) => {
   if (response?.output_text) return response.output_text;
 
   const output = response?.output || [];
@@ -228,9 +228,9 @@ function extractOutputText(response) {
   }
 
   return '';
-}
+};
 
-function cleanJsonText(raw) {
+const cleanJsonText = (raw) => {
   const text = String(raw || '').trim();
   const match = text.match(/\{[\s\S]*\}/);
   return (match ? match[0] : text)
@@ -238,9 +238,9 @@ function cleanJsonText(raw) {
     .replace(/^```\s*/i, '')
     .replace(/```$/i, '')
     .trim();
-}
+};
 
-function parseJsonResponse(response, sourceLabel = 'La IA') {
+const parseJsonResponse = (response, sourceLabel = 'La IA') => {
   const raw = extractOutputText(response);
 
   if (!raw) {
@@ -256,9 +256,9 @@ function parseJsonResponse(response, sourceLabel = 'La IA') {
     );
     throw new Error(`${sourceLabel} devolvió texto que no es JSON válido.`);
   }
-}
+};
 
-export function normalizeResult(parsed) {
+export const normalizeResult = (parsed) => {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('Respuesta de la IA vacía o inválida.');
   }
@@ -281,16 +281,16 @@ export function normalizeResult(parsed) {
       : [],
     disclaimer: typeof parsed.disclaimer === 'string' && parsed.disclaimer.trim() ? parsed.disclaimer : DEFAULT_DISCLAIMER,
   };
-}
+};
 
-function getOpenAIErrorMessage(error) {
+const getOpenAIErrorMessage = (error) => {
   return (
     error?.error?.message ||
     error?.response?.data?.error?.message ||
     error?.message ||
     'Error desconocido al llamar a OpenAI.'
   );
-}
+};
 
 export const mapOpenAIError = (error) => createAppError(
   isTimeoutError(error)
@@ -302,7 +302,7 @@ export const mapOpenAIError = (error) => createAppError(
   },
 );
 
-async function callModel({ client, model, input }) {
+const callModel = async ({ client, model, input }) => {
   const response = await client.responses.create({
     model,
     instructions: systemPrompt,
@@ -312,9 +312,9 @@ async function callModel({ client, model, input }) {
   });
 
   return normalizeResult(parseJsonResponse(response));
-}
+};
 
-async function callImageExtractionModel({ client, model, image }) {
+const callImageExtractionModel = async ({ client, model, image }) => {
   const response = await client.responses.create({
     model,
     instructions: imageExtractionInstructions,
@@ -324,15 +324,15 @@ async function callImageExtractionModel({ client, model, image }) {
   });
 
   return normalizeImageEvidence(parseJsonResponse(response, 'El componente OCR'));
-}
+};
 
-async function analyzeUsingModel({
+const analyzeUsingModel = async ({
   client,
   model,
   type,
   content,
   linkContext,
-}) {
+}) => {
   if (type === 'image') {
     return runImageAnalysisPipeline({
       content,
@@ -358,9 +358,9 @@ async function analyzeUsingModel({
     model,
     input: buildResponsesInput({ type, content, linkContext }),
   });
-}
+};
 
-export async function analyzeWithAI({ type, content, linkContext = null }) {
+export const analyzeWithAI = async ({ type, content, linkContext = null }) => {
   if (isClearlyOutOfScope({ type, content, linkContext })) {
     return {
       allowed: false,
@@ -408,4 +408,4 @@ export async function analyzeWithAI({ type, content, linkContext = null }) {
       throw mapOpenAIError(fallbackError);
     }
   }
-}
+};

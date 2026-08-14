@@ -117,7 +117,7 @@ const MonthlyLineChart = ({ series }) => {
   );
 };
 
-export default function FraudTrendsDashboard({ mode = 'reporting' }) {
+const FraudTrendsDashboard = ({ mode = 'reporting' }) => {
   const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
   const [report, setReport] = useState({ rows: [], totals: {} });
   const [isLoading, setIsLoading] = useState(true);
@@ -351,4 +351,6 @@ export default function FraudTrendsDashboard({ mode = 'reporting' }) {
       </div>
     </section>
   );
-}
+};
+
+export default FraudTrendsDashboard;

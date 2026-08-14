@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { APP_ROLES } from '../config/permissions.js';
 import { createAuthToken } from '../services/token.service.js';
 import { verifySecurePassword } from '../services/password.service.js';
-import { findUserByEmail } from '../services/user.service.js';
+import { findUserByEmail, toPublicUser } from '../services/user.service.js';
 import {
   ERROR_CODES,
   logServerError,
@@ -11,17 +11,8 @@ import {
 
 const router = Router();
 
-function buildPublicUser(user) {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  };
-}
-
-function createRoleLogin(expectedRole) {
-  return async function roleLogin(req, res) {
+const createRoleLogin = (expectedRole) => {
+  return async (req, res) => {
     const { email, password } = req.body || {};
 
     if (
@@ -57,7 +48,7 @@ function createRoleLogin(expectedRole) {
         });
       }
 
-      const publicUser = buildPublicUser(user);
+      const publicUser = toPublicUser(user);
 
       return res.json({
         token: createAuthToken(publicUser),
@@ -70,7 +61,7 @@ function createRoleLogin(expectedRole) {
       });
     }
   };
-}
+};
 
 router.post(
   '/admin/login',

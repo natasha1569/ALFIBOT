@@ -8,6 +8,16 @@ export const normalizeRiskLevel = (value) => {
   return 'medio';
 };
 
+export const normalizeSpanishRiskLevel = (value) => {
+  const normalized = String(value || '').toLowerCase().trim();
+
+  if (normalized.includes('alto')) return 'alto';
+  if (normalized.includes('medio')) return 'medio';
+  if (normalized.includes('bajo')) return 'bajo';
+
+  return 'medio';
+};
+
 export const getAssistantState = ({ isAnalyzing, error, result }) => {
   if (isAnalyzing) return 'analyzing';
   if (error) return 'error';

@@ -18,7 +18,7 @@ import {
 
 const router = Router();
 
-function sendKnownError(error, res, fallbackMessage) {
+const sendKnownError = (error, res, fallbackMessage) => {
   if (Number(error?.statusCode) >= 400 && Number(error?.statusCode) < 500) {
     return sendError(res, ERROR_CODES.INVALID_REQUEST, {
       status: Number(error.statusCode),
@@ -30,7 +30,7 @@ function sendKnownError(error, res, fallbackMessage) {
   return sendError(res, ERROR_CODES.DATABASE_UNAVAILABLE, {
     publicMessage: fallbackMessage,
   });
-}
+};
 
 router.get(
   '/users',

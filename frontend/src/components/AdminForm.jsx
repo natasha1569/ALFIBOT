@@ -1,4 +1,4 @@
-export default function AdminForm({
+const AdminForm = ({
   fields,
   values,
   onChange,
@@ -6,7 +6,7 @@ export default function AdminForm({
   onCancel,
   submitLabel = 'Guardar',
   disabled = false,
-}) {
+}) => {
   return (
     <form onSubmit={onSubmit}>
       <div className="row g-3">
@@ -79,4 +79,6 @@ export default function AdminForm({
       </div>
     </form>
   );
-}
+};
+
+export default AdminForm;

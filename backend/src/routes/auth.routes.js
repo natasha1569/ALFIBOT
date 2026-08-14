@@ -8,6 +8,7 @@ import {
 import {
   createRegisteredUser,
   findUserByEmail,
+  toPublicUser,
 } from '../services/user.service.js';
 import {
   ERROR_CODES,
@@ -72,15 +73,6 @@ const sendValidationError = (res, publicMessage) => sendError(
   ERROR_CODES.INVALID_REQUEST,
   { publicMessage },
 );
-
-function buildPublicUser(user) {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  };
-}
 
 router.post('/register', async (req, res) => {
   const {
@@ -189,7 +181,7 @@ router.post('/register', async (req, res) => {
 
     return res.status(201).json({
       message: 'Cuenta creada correctamente. Ya puedes iniciar sesión.',
-      user: buildPublicUser(createdUser),
+      user: toPublicUser(createdUser),
     });
   } catch (error) {
     if (error?.code === '23505') {
@@ -246,7 +238,7 @@ router.post('/login', async (req, res) => {
         });
       }
 
-      const publicUser = buildPublicUser(databaseUser);
+      const publicUser = toPublicUser(databaseUser);
 
       return res.json({
         token: createAuthToken(publicUser),

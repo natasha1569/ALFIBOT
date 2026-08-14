@@ -1,11 +1,11 @@
-export default function AdminFilters({
+const AdminFilters = ({
   fields,
   values,
   onChange,
   onSubmit,
   onClear,
   disabled = false,
-}) {
+}) => {
   return (
     <form className="row g-3 align-items-end mb-4" onSubmit={onSubmit}>
       {fields.map((field) => (
@@ -59,4 +59,6 @@ export default function AdminFilters({
       </div>
     </form>
   );
-}
+};
+
+export default AdminFilters;

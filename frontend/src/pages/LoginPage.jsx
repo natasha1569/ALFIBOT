@@ -64,11 +64,11 @@ const EMPTY_REGISTRATION = {
   confirmPassword: '',
 };
 
-export default function LoginPage({
+const LoginPage = ({
   onLogin,
   onBack,
   initialMode = 'login',
-}) {
+}) => {
   const [mode, setMode] = useState(initialMode);
   const rememberedEmail = getRememberedEmail();
 
@@ -86,16 +86,16 @@ export default function LoginPage({
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  function handleChange(event) {
+  const handleChange = (event) => {
     const { name, value } = event.target;
 
     setCredentials((current) => ({
       ...current,
       [name]: value,
     }));
-  }
+  };
 
-  function handleRememberEmailChange(event) {
+  const handleRememberEmailChange = (event) => {
     const { checked } = event.target;
 
     setRememberEmail(checked);
@@ -103,18 +103,18 @@ export default function LoginPage({
     if (!checked) {
       clearRememberedEmail();
     }
-  }
+  };
 
-  function handleRegistrationChange(event) {
+  const handleRegistrationChange = (event) => {
     const { name, value, type, checked } = event.target;
 
     setRegistration((current) => ({
       ...current,
       [name]: type === 'checkbox' ? checked : value,
     }));
-  }
+  };
 
-  function handleInterestChange(code) {
+  const handleInterestChange = (code) => {
     setRegistration((current) => {
       const alreadySelected = current.interests.includes(code);
 
@@ -125,15 +125,15 @@ export default function LoginPage({
           : [...current.interests, code],
       };
     });
-  }
+  };
 
-  function changeMode(nextMode) {
+  const changeMode = (nextMode) => {
     setMode(nextMode);
     setError('');
     setSuccessMessage('');
-  }
+  };
 
-  async function handleSubmit(event) {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     setError('');
@@ -159,9 +159,9 @@ export default function LoginPage({
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
-  async function handleRegister(event) {
+  const handleRegister = async (event) => {
     event.preventDefault();
 
     setError('');
@@ -206,7 +206,7 @@ export default function LoginPage({
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <main className="alfi-login-page">
@@ -223,7 +223,7 @@ export default function LoginPage({
 
         <div className="alfi-login-visual">
           <img
-            src="/alfi-robot-mini.png"
+            src="/alfi-robot-low.png"
             alt="ALFI BOT"
           />
         </div>
@@ -603,4 +603,6 @@ export default function LoginPage({
       </section>
     </main>
   );
-}
+};
+
+export default LoginPage;

@@ -26,7 +26,7 @@ import {
 
 const VOICE_STORAGE_KEY = "alfiBotSelectedVoiceURI";
 
-export default function Home() {
+const Home = () => {
   const [result, setResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState("");
@@ -130,13 +130,13 @@ export default function Home() {
     };
   }, [result]);
 
-  function stopVoiceResponse() {
+  const stopVoiceResponse = () => {
     speechRequestRef.current += 1;
     stopSpeaking();
     setIsSpeaking(false);
-  }
+  };
 
-  function speakAnalysisResult(resultToSpeak) {
+  const speakAnalysisResult = (resultToSpeak) => {
     const speechText = buildAnalysisSpeech(resultToSpeak);
 
     if (!speechText) return;
@@ -160,18 +160,18 @@ export default function Home() {
     if (!started) {
       updateSpeaking(false);
     }
-  }
+  };
 
-  function handleSpeakResult(resultToSpeak) {
+  const handleSpeakResult = (resultToSpeak) => {
     if (isSpeaking) {
       stopVoiceResponse();
       return;
     }
 
     speakAnalysisResult(resultToSpeak);
-  }
+  };
 
-  function handleVoiceChange(event) {
+  const handleVoiceChange = (event) => {
     const nextVoiceURI = event.target.value;
 
     stopVoiceResponse();
@@ -185,9 +185,9 @@ export default function Home() {
     } else {
       window.localStorage.removeItem(VOICE_STORAGE_KEY);
     }
-  }
+  };
 
-  function handleTestVoice() {
+  const handleTestVoice = () => {
     if (isSpeaking) {
       stopVoiceResponse();
       return;
@@ -211,9 +211,9 @@ export default function Home() {
         onError: () => updateSpeaking(false),
       },
     );
-  }
+  };
 
-  async function handleAnalyze(type, content) {
+  const handleAnalyze = async (type, content) => {
     stopVoiceResponse();
 
     setIsAnalyzing(true);
@@ -277,9 +277,9 @@ export default function Home() {
     } finally {
       setIsAnalyzing(false);
     }
-  }
+  };
 
-  async function handleClearHistory() {
+  const handleClearHistory = async () => {
     try {
       await clearHistory();
       setHistory([]);
@@ -288,14 +288,14 @@ export default function Home() {
         err.message || "No se pudo borrar el historial.",
       );
     }
-  }
+  };
 
-  function handleShare(sharedResult) {
+  const handleShare = (sharedResult) => {
     setFeedback("");
     setShareResult(sharedResult);
-  }
+  };
 
-  async function handleDownloadPdf() {
+  const handleDownloadPdf = async () => {
     if (!shareResult) return;
 
     setIsSharing(true);
@@ -320,9 +320,9 @@ export default function Home() {
     } finally {
       setIsSharing(false);
     }
-  }
+  };
 
-  async function handleWhatsappShare() {
+  const handleWhatsappShare = async () => {
     if (!shareResult) return;
 
     const whatsappWindow = window.open(
@@ -361,9 +361,9 @@ export default function Home() {
     } finally {
       setIsSharing(false);
     }
-  }
+  };
 
-  async function handleCopySummary() {
+  const handleCopySummary = async () => {
     if (!shareResult) return;
 
     setIsSharing(true);
@@ -386,7 +386,7 @@ export default function Home() {
     } finally {
       setIsSharing(false);
     }
-  }
+  };
 
   const assistantState = getAssistantState({
     isAnalyzing,
@@ -632,4 +632,6 @@ export default function Home() {
       />
     </div>
   );
-}
+};
+
+export default Home;

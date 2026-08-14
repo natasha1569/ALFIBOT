@@ -1,6 +1,13 @@
 import pool from '../config/database.js';
 
-export async function findUserByEmail(email) {
+export const toPublicUser = (user) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
+
+export const findUserByEmail = async (email) => {
   const result = await pool.query(
     `
       SELECT
@@ -21,9 +28,9 @@ export async function findUserByEmail(email) {
   );
 
   return result.rows[0] || null;
-}
+};
 
-export async function createRegisteredUser({
+export const createRegisteredUser = async ({
   name,
   email,
   phone,
@@ -33,7 +40,7 @@ export async function createRegisteredUser({
   termsAccepted,
   termsVersion,
   passwordHash,
-}) {
+}) => {
   const client = await pool.connect();
 
   try {
@@ -141,13 +148,13 @@ export async function createRegisteredUser({
   } finally {
     client.release();
   }
-}
+};
 
-export async function listUsers({
+export const listUsers = async ({
   search = '',
   role = '',
   active = null,
-} = {}, db = pool) {
+} = {}, db = pool) => {
   const result = await db.query(
     `
       SELECT
@@ -179,13 +186,13 @@ export async function listUsers({
   );
 
   return result.rows;
-}
+};
 
-export async function updateUserAdministration({
+export const updateUserAdministration = async ({
   id,
   role,
   active,
-}, db = pool) {
+}, db = pool) => {
   const result = await db.query(
     `
       UPDATE alfi.usuarios AS u
@@ -210,4 +217,4 @@ export async function updateUserAdministration({
   );
 
   return result.rows[0] || null;
-}
+};

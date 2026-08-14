@@ -54,7 +54,7 @@ const ASSISTANT_IMAGES = [
   "/alfi-robot-high.png",
 ];
 
-export default function AlfiAssistant({ status = "idle" }) {
+const AlfiAssistant = ({ status = "idle" }) => {
   const config = STATE_CONFIG[status] || STATE_CONFIG.idle;
 
   useEffect(() => {
@@ -91,4 +91,6 @@ export default function AlfiAssistant({ status = "idle" }) {
       </div>
     </section>
   );
-}
+};
+
+export default AlfiAssistant;

@@ -1,23 +1,23 @@
 const SPANISH_LOCALE = "es-EC";
 
-function getRecognitionConstructor() {
+const getRecognitionConstructor = () => {
   if (typeof window === "undefined") return null;
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-}
+};
 
-export function isSpeechRecognitionSupported() {
+export const isSpeechRecognitionSupported = () => {
   return Boolean(getRecognitionConstructor());
-}
+};
 
-export function isSpeechSynthesisSupported() {
+export const isSpeechSynthesisSupported = () => {
   return (
     typeof window !== "undefined" &&
     "speechSynthesis" in window &&
     "SpeechSynthesisUtterance" in window
   );
-}
+};
 
-export function createSpanishRecognition(handlers = {}) {
+export const createSpanishRecognition = (handlers = {}) => {
   const Recognition = getRecognitionConstructor();
   if (!Recognition) return null;
 
@@ -50,16 +50,16 @@ export function createSpanishRecognition(handlers = {}) {
   };
 
   return recognition;
-}
+};
 
-function normalizeForSpeech(value) {
+const normalizeForSpeech = (value) => {
   return String(value || "")
     .replace(/https?:\/\/\S+/gi, " enlace web ")
     .replace(/\s+/g, " ")
     .trim();
-}
+};
 
-function voicePriority(voice) {
+const voicePriority = (voice) => {
   const lang = String(voice.lang || "").toLowerCase();
   if (lang === "es-ec") return 0;
   if (lang === "es-419") return 1;
@@ -68,9 +68,9 @@ function voicePriority(voice) {
   if (lang.startsWith("es-es")) return 4;
   if (lang.startsWith("es")) return 5;
   return 99;
-}
+};
 
-export function getAvailableSpanishVoices() {
+export const getAvailableSpanishVoices = () => {
   if (!isSpeechSynthesisSupported()) return [];
 
   return window.speechSynthesis
@@ -81,9 +81,9 @@ export function getAvailableSpanishVoices() {
       if (priorityDifference !== 0) return priorityDifference;
       return first.name.localeCompare(second.name, "es");
     });
-}
+};
 
-function findSpanishVoice(preferredVoiceURI = "") {
+const findSpanishVoice = (preferredVoiceURI = "") => {
   if (!isSpeechSynthesisSupported()) return null;
 
   const voices = window.speechSynthesis.getVoices();
@@ -101,14 +101,14 @@ function findSpanishVoice(preferredVoiceURI = "") {
     voices.find((voice) => voice.lang?.toLowerCase().startsWith("es")) ||
     null
   );
-}
+};
 
-export function stopSpeaking() {
+export const stopSpeaking = () => {
   if (!isSpeechSynthesisSupported()) return;
   window.speechSynthesis.cancel();
-}
+};
 
-export function speakText(
+export const speakText = (
   text,
   {
     voiceURI = "",
@@ -119,7 +119,7 @@ export function speakText(
     onEnd,
     onError,
   } = {},
-) {
+) => {
   if (!isSpeechSynthesisSupported()) {
     onError?.(new Error("La lectura por voz no está disponible en este navegador."));
     return false;
@@ -154,9 +154,9 @@ export function speakText(
   window.speechSynthesis.resume();
   window.speechSynthesis.speak(utterance);
   return true;
-}
+};
 
-export function buildAnalysisSpeech(result) {
+export const buildAnalysisSpeech = (result) => {
   if (!result) return "";
 
   if (result.allowed === false) {
@@ -197,4 +197,4 @@ export function buildAnalysisSpeech(result) {
   }
 
   return parts.join(" ");
-}
+};

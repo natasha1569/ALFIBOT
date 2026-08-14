@@ -9,9 +9,9 @@ import {
   validateImageDataUri,
 } from '../src/services/imageAnalysis.service.js';
 
-function createDataUri(mimeType, bytes) {
+const createDataUri = (mimeType, bytes) => {
   return `data:${mimeType};base64,${Buffer.from(bytes).toString('base64')}`;
-}
+};
 
 test('validateImageDataUri acepta PNG y devuelve información normalizada', () => {
   const pngBytes = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00];

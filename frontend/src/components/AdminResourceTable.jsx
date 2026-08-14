@@ -1,9 +1,9 @@
-export default function AdminResourceTable({
+const AdminResourceTable = ({
   columns,
   rows,
   rowKey = 'id',
   emptyMessage = 'No existen registros para mostrar.',
-}) {
+}) => {
   return (
     <div className="table-responsive">
       <table className="table table-hover align-middle mb-0">
@@ -43,4 +43,6 @@ export default function AdminResourceTable({
       </table>
     </div>
   );
-}
+};
+
+export default AdminResourceTable;

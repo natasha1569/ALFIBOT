@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   getAssistantState,
   normalizeRiskLevel,
+  normalizeSpanishRiskLevel,
 } from '../src/utils/risk.js';
 
 test('normalizeRiskLevel reconoce niveles de riesgo en español e inglés', () => {
@@ -14,6 +15,14 @@ test('normalizeRiskLevel reconoce niveles de riesgo en español e inglés', () =
 test('normalizeRiskLevel usa riesgo medio como valor seguro por defecto', () => {
   assert.equal(normalizeRiskLevel('desconocido'), 'medio');
   assert.equal(normalizeRiskLevel(null), 'medio');
+});
+
+test('normalizeSpanishRiskLevel preserva la semántica histórica solo en español', () => {
+  assert.equal(normalizeSpanishRiskLevel('Riesgo ALTO'), 'alto');
+  assert.equal(normalizeSpanishRiskLevel('riesgo medio'), 'medio');
+  assert.equal(normalizeSpanishRiskLevel('riesgo bajo'), 'bajo');
+  assert.equal(normalizeSpanishRiskLevel('High'), 'medio');
+  assert.equal(normalizeSpanishRiskLevel(null), 'medio');
 });
 
 test('getAssistantState prioriza los estados de carga y error', () => {

@@ -32,7 +32,7 @@ const VOICE_ERROR_MESSAGES = {
     "No se detectó voz. Acércate al micrófono y vuelve a intentarlo.",
 };
 
-export default function AnalysisForm({ onAnalyze, isLoading }) {
+const AnalysisForm = ({ onAnalyze, isLoading }) => {
   const [activeType, setActiveType] = useState("text");
   const [textValue, setTextValue] = useState("");
   const [linkValue, setLinkValue] = useState("");
@@ -56,7 +56,7 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
     };
   }, []);
 
-  function stopListening(useAbort = false) {
+  const stopListening = (useAbort = false) => {
     const recognition = recognitionRef.current;
     if (!recognition) return;
 
@@ -67,18 +67,18 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
       setIsListening(false);
       setInterimTranscript("");
     }
-  }
+  };
 
-  function appendVoiceText(transcript) {
+  const appendVoiceText = (transcript) => {
     if (!transcript) return;
 
     setTextValue((currentValue) => {
       const separator = currentValue.trim().length > 0 ? " " : "";
       return `${currentValue}${separator}${transcript}`.slice(0, MAX_TEXT_LENGTH);
     });
-  }
+  };
 
-  function getRecognition() {
+  const getRecognition = () => {
     if (recognitionRef.current) return recognitionRef.current;
 
     recognitionRef.current = createSpanishRecognition({
@@ -111,9 +111,9 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
     });
 
     return recognitionRef.current;
-  }
+  };
 
-  function handleVoiceToggle() {
+  const handleVoiceToggle = () => {
     if (!voiceSupported || isLoading) return;
 
     if (isListening) {
@@ -134,17 +134,17 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
         "El micrófono ya está iniciando. Espera un momento y vuelve a pulsar el botón.",
       );
     }
-  }
+  };
 
-  function handleTabChange(key) {
+  const handleTabChange = (key) => {
     if (isListening) stopListening(true);
     setActiveType(key);
     setFileError("");
     setVoiceMessage("");
     setInterimTranscript("");
-  }
+  };
 
-  function handleFileChange(event) {
+  const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -175,9 +175,9 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
     reader.onerror = () =>
       setFileError("No se pudo leer la imagen. Intenta con otro archivo.");
     reader.readAsDataURL(file);
-  }
+  };
 
-  function handleClear() {
+  const handleClear = () => {
     if (isListening) stopListening(true);
     setTextValue("");
     setLinkValue("");
@@ -186,9 +186,9 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
     setVoiceMessage("");
     setInterimTranscript("");
     if (fileInputRef.current) fileInputRef.current.value = "";
-  }
+  };
 
-  function handleSubmit(event) {
+  const handleSubmit = (event) => {
     event.preventDefault();
     if (isListening) stopListening();
 
@@ -199,7 +199,7 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
     } else if (activeType === "image" && imageData) {
       onAnalyze("image", imageData.dataUrl);
     }
-  }
+  };
 
   const canSubmit =
     !isLoading &&
@@ -431,4 +431,6 @@ export default function AnalysisForm({ onAnalyze, isLoading }) {
       </div>
     </section>
   );
-}
+};
+
+export default AnalysisForm;
