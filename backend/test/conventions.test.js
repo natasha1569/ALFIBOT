@@ -32,7 +32,7 @@ test('ADRs use the approved root folder and simplified decision format', async (
 
   for (const fileName of adrFiles) {
     const content = await readFile(path.join(ADR_DIRECTORY, fileName), 'utf8');
-    const dates = content.match(/^Fecha: \d{4}-\d{2}-\d{2}$/gm) || [];
+    const dates = content.match(/^Date: \d{4}-\d{2}-\d{2}$/gm) || [];
     const decisions = content.match(/^\d+\. .+$/gm) || [];
 
     assert.match(content, /^# .+$/m);
