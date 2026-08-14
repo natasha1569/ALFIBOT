@@ -1,19 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
-import {
-  fetchAdminUsers,
-  updateAdminUser,
-} from '../services/api.js';
-import AdminFilters from './AdminFilters.jsx';
-import AdminForm from './AdminForm.jsx';
-import AdminModal from './AdminModal.jsx';
-import AdminResourceTable from './AdminResourceTable.jsx';
+import { useEffect, useMemo, useState } from "react";
+import { fetchAdminUsers, updateAdminUser } from "../services/api.js";
+import AdminFilters from "./AdminFilters.jsx";
+import AdminModal from "./AdminModal.jsx";
+import AdminResourceTable from "./AdminResourceTable.jsx";
+import AdminForm from "./AdminForm/AdminForm.jsx";
 
-const EMPTY_FILTERS = { search: '', role: '', active: '' };
+const EMPTY_FILTERS = { search: "", role: "", active: "" };
 
 const ROLE_OPTIONS = [
-  { value: 'administrador', label: 'Administrador' },
-  { value: 'auditor', label: 'Auditor' },
-  { value: 'usuario', label: 'Usuario' },
+  { value: "administrador", label: "Administrador" },
+  { value: "auditor", label: "Auditor" },
+  { value: "usuario", label: "Usuario" },
 ];
 
 const UsersAdminPanel = ({ currentUser }) => {
@@ -21,15 +18,15 @@ const UsersAdminPanel = ({ currentUser }) => {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [users, setUsers] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ role: 'usuario', active: true });
+  const [form, setForm] = useState({ role: "usuario", active: true });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const loadUsers = async (nextFilters = filters) => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await fetchAdminUsers(nextFilters);
@@ -46,80 +43,87 @@ const UsersAdminPanel = ({ currentUser }) => {
     loadUsers(filters);
   }, [filters]);
 
-  const filterFields = useMemo(() => [
-    {
-      name: 'search',
-      label: 'Buscar',
-      type: 'search',
-      placeholder: 'Nombre, correo o celular',
-      columnClass: 'col-12 col-lg-5',
-    },
-    {
-      name: 'role',
-      label: 'Rol',
-      type: 'select',
-      options: [
-        { value: '', label: 'Todos' },
-        ...ROLE_OPTIONS,
-      ],
-      columnClass: 'col-12 col-md-4 col-lg-3',
-    },
-    {
-      name: 'active',
-      label: 'Estado',
-      type: 'select',
-      options: [
-        { value: '', label: 'Todos' },
-        { value: 'true', label: 'Activos' },
-        { value: 'false', label: 'Inactivos' },
-      ],
-      columnClass: 'col-12 col-md-4 col-lg-2',
-    },
-  ], []);
+  const filterFields = useMemo(
+    () => [
+      {
+        name: "search",
+        label: "Buscar",
+        type: "search",
+        placeholder: "Nombre, correo o celular",
+        columnClass: "col-12 col-lg-5",
+      },
+      {
+        name: "role",
+        label: "Rol",
+        type: "select",
+        options: [{ value: "", label: "Todos" }, ...ROLE_OPTIONS],
+        columnClass: "col-12 col-md-4 col-lg-3",
+      },
+      {
+        name: "active",
+        label: "Estado",
+        type: "select",
+        options: [
+          { value: "", label: "Todos" },
+          { value: "true", label: "Activos" },
+          { value: "false", label: "Inactivos" },
+        ],
+        columnClass: "col-12 col-md-4 col-lg-2",
+      },
+    ],
+    [],
+  );
 
-  const columns = useMemo(() => [
-    {
-      key: 'name',
-      label: 'Usuario',
-      render: (value, row) => (
-        <div>
-          <strong>{value}</strong>
-          <small className="d-block text-secondary">{row.email}</small>
-        </div>
-      ),
-    },
-    { key: 'phone', label: 'Celular' },
-    { key: 'province', label: 'Provincia' },
-    {
-      key: 'role',
-      label: 'Rol',
-      render: (value) => (
-        <span className="badge text-bg-light border text-capitalize">{value}</span>
-      ),
-    },
-    {
-      key: 'active',
-      label: 'Estado',
-      render: (value) => (
-        <span className={`badge ${value ? 'text-bg-success' : 'text-bg-secondary'}`}>
-          {value ? 'Activo' : 'Inactivo'}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      label: 'Acciones',
-      render: (_value, row) => (
-        <button
-          className="btn btn-sm btn-outline-primary"
-          onClick={() => openEdit(row)}
-          type="button"
-        >
-          Editar
-        </button>
-      ),
-    },
-  ], []);
+  const columns = useMemo(
+    () => [
+      {
+        key: "name",
+        label: "Usuario",
+        render: (value, row) => (
+          <div>
+            <strong>{value}</strong>
+            <small className="d-block text-secondary">{row.email}</small>
+          </div>
+        ),
+      },
+      { key: "phone", label: "Celular" },
+      { key: "province", label: "Provincia" },
+      {
+        key: "role",
+        label: "Rol",
+        render: (value) => (
+          <span className="badge text-bg-light border text-capitalize">
+            {value}
+          </span>
+        ),
+      },
+      {
+        key: "active",
+        label: "Estado",
+        render: (value) => (
+          <span
+            className={`badge ${value ? "text-bg-success" : "text-bg-secondary"}`}
+          >
+            {value ? "Activo" : "Inactivo"}
+          </span>
+        ),
+      },
+      {
+        key: "actions",
+        label: "Acciones",
+        render: (_value, row) => (
+          <button
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => openEdit(row)}
+            type="button"
+          >
+            Editar
+          </button>
+        ),
+      },
+    ],
+    [],
+  );
 
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
@@ -142,23 +146,23 @@ const UsersAdminPanel = ({ currentUser }) => {
       role: user.role,
       active: Boolean(user.active),
     });
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
   };
 
   const handleFormChange = (event) => {
     const { name, value, type, checked } = event.target;
     setForm((current) => ({
       ...current,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const saveUser = async (event) => {
     event.preventDefault();
     setSaving(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
       const response = await updateAdminUser(editing.id, form);
@@ -174,17 +178,17 @@ const UsersAdminPanel = ({ currentUser }) => {
 
   const userFormFields = [
     {
-      name: 'role',
-      label: 'Rol',
-      type: 'select',
+      name: "role",
+      label: "Rol",
+      type: "select",
       options: ROLE_OPTIONS,
       required: true,
       disabled: editing?.id === currentUser?.id,
     },
     {
-      name: 'active',
-      label: 'Cuenta activa',
-      type: 'checkbox',
+      name: "active",
+      label: "Cuenta activa",
+      type: "checkbox",
       disabled: editing?.id === currentUser?.id,
     },
   ];
@@ -199,7 +203,7 @@ const UsersAdminPanel = ({ currentUser }) => {
           </p>
         </div>
         <span className="badge rounded-pill text-bg-primary align-self-start">
-          {loading ? 'Consultando…' : `${users.length} usuarios`}
+          {loading ? "Consultando…" : `${users.length} usuarios`}
         </span>
       </div>
 
@@ -229,7 +233,7 @@ const UsersAdminPanel = ({ currentUser }) => {
 
       <AdminModal
         open={Boolean(editing)}
-        title={`Editar usuario · ${editing?.name || ''}`}
+        title={`Editar usuario · ${editing?.name || ""}`}
         onClose={() => setEditing(null)}
       >
         <AdminForm
