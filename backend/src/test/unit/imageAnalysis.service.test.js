@@ -7,7 +7,7 @@ import {
   normalizeImageEvidence,
   runImageAnalysisPipeline,
   validateImageDataUri,
-} from '../imageAnalysis.service.js';
+} from '../../services/imageAnalysis.service.js';
 
 const createDataUri = (mimeType, bytes) => {
   return `data:${mimeType};base64,${Buffer.from(bytes).toString('base64')}`;

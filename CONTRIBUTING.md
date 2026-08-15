@@ -75,7 +75,7 @@ Backend:
 cd backend
 npm test
 npm run check:conventions
-node test-rbac.js
+npm run test:rbac
 ```
 
 Frontend:

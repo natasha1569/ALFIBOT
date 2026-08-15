@@ -11,7 +11,7 @@ import {
   getPublicError,
   isTimeoutError,
   sendError,
-} from '../errorCatalog.js';
+} from '../../errors/errorCatalog.js';
 import { analyzeWithAI, mapOpenAIError } from '../../services/openai.service.js';
 
 const BACKEND_ROOT = path.resolve(

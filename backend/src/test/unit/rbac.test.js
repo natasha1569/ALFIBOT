@@ -2,11 +2,11 @@ import {
   APP_ROLES,
   PERMISSIONS,
   roleHasPermission,
-} from './src/config/permissions.js';
+} from '../../config/permissions.js';
 import {
   requirePermission,
   requireRoles,
-} from './src/middlewares/authorization.middleware.js';
+} from '../../middlewares/authorization.middleware.js';
 
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);

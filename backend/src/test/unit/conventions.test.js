@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const BACKEND_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '..', '..',
+  '..', '..', '..',
 );
 const REPOSITORY_ROOT = path.resolve(BACKEND_ROOT, '..');
 const ADR_DIRECTORY = path.join(REPOSITORY_ROOT, 'ADRs');

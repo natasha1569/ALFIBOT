@@ -152,7 +152,7 @@ Backend:
 ```bash
 cd backend
 npm test
-node test-rbac.js
+npm run test:rbac
 ```
 
 Frontend:
@@ -167,9 +167,9 @@ Las pruebas que requieren una base PostgreSQL configurada se ejecutan de forma e
 
 ```bash
 cd backend
-node test-auth.js
-node test-admin-users.js
-node test-reporting.js
+npm run test:auth
+npm run test:admin
+npm run test:reporting
 ```
 
 Estos scripts pueden crear datos temporales o necesitan las migraciones correspondientes. Revisa sus encabezados y usa una base de pruebas, no producción.
