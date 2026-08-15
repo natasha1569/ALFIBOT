@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import pool from './src/config/database.js';
+import { getDataSource } from './src/database/data-source.js';
 import { hashSecurePassword } from './src/services/password.service.js';
 import {
   listUsers,
@@ -11,51 +11,34 @@ const assert = (condition, message) => {
 };
 
 const run = async () => {
-  const client = await pool.connect();
+  const dataSource = await getDataSource();
   const suffix = Date.now();
   const email = `afb333.${suffix}@example.com`;
+  const roleRepository = dataSource.getRepository('Role');
+  const userRepository = dataSource.getRepository('User');
+  const auditRepository = dataSource.getRepository('AuditEvent');
+  let userId = null;
 
   try {
-    await client.query('BEGIN');
+    const userRole = await roleRepository.findOneBy({ name: 'usuario' });
+    assert(userRole, 'No existe el rol usuario requerido por AFB-333.');
 
     const passwordHash = await hashSecurePassword('AlfiTest123');
+    const user = await userRepository.save(userRepository.create({
+      roleId: userRole.id,
+      name: 'Prueba HU-17',
+      email,
+      phone: '0999999999',
+      province: 'Pichincha',
+      ageRange: '25-34',
+      termsAccepted: true,
+      termsAcceptedAt: new Date(),
+      termsVersion: '2026-08-12',
+      passwordHash,
+    }));
+    userId = user.id;
 
-    const userResult = await client.query(
-      `
-        INSERT INTO alfi.usuarios (
-          rol_id,
-          nombre,
-          correo,
-          celular,
-          provincia,
-          rango_edad,
-          terminos_aceptados,
-          terminos_aceptados_en,
-          terminos_version,
-          password_hash
-        )
-        SELECT
-          rol_id,
-          $1,
-          $2,
-          '0999999999',
-          'Pichincha',
-          '25-34',
-          true,
-          CURRENT_TIMESTAMP,
-          '2026-08-12',
-          $3
-        FROM alfi.roles
-        WHERE nombre = 'usuario'
-        RETURNING usuario_id
-      `,
-      ['Prueba HU-17', email, passwordHash],
-    );
-
-    const userId = userResult.rows[0]?.usuario_id;
-    assert(userId, 'No se pudo crear el usuario temporal de AFB-333.');
-
-    const users = await listUsers({ search: email }, client);
+    const users = await listUsers({ search: email });
     assert(users.length === 1, 'El listado administrativo no encontró al usuario temporal.');
     assert(users[0].role === 'usuario', 'El usuario temporal no inició con el rol usuario.');
     assert(users[0].active === true, 'El usuario temporal no inició activo.');
@@ -64,41 +47,37 @@ const run = async () => {
       id: userId,
       role: 'auditor',
       active: true,
-    }, client);
+    });
     assert(editedRole?.role === 'auditor', 'No se actualizó el rol del usuario.');
 
     const deactivated = await updateUserAdministration({
       id: userId,
       role: 'auditor',
       active: false,
-    }, client);
+    });
     assert(deactivated?.active === false, 'El usuario no quedó desactivado lógicamente.');
 
-    const inactiveUsers = await listUsers({ search: email, active: false }, client);
+    const inactiveUsers = await listUsers({ search: email, active: false });
     assert(
       inactiveUsers.length === 1 && inactiveUsers[0].id === userId,
       'El filtro por estado no encontró al usuario desactivado.',
     );
 
-    const roleCatalog = await client.query(
-      `
-        SELECT nombre
-        FROM alfi.roles
-        WHERE nombre = 'analista'
-      `,
-    );
+    const analystRole = await roleRepository.findOneBy({ name: 'analista' });
     assert(
-      roleCatalog.rowCount === 0,
+      !analystRole,
       'El rol analista continúa en el catálogo; ejecuta primero backend/sql/AFB-333-usuarios-accesos.sql.',
     );
 
     console.log(
-      'AFB-333 OK: listado, filtros, edición de rol, desactivación de usuario y retiro de analista validados dentro de una transacción.',
+      'AFB-333 OK: listado, filtros, edición de rol, desactivación y catálogo validados con TypeORM.',
     );
   } finally {
-    await client.query('ROLLBACK');
-    client.release();
-    await pool.end();
+    if (userId) {
+      await userRepository.delete({ id: userId });
+      await auditRepository.delete({ tableName: 'usuarios', recordId: String(userId) });
+    }
+    if (dataSource.isInitialized) await dataSource.destroy();
   }
 };
 

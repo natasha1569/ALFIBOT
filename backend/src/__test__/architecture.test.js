@@ -6,21 +6,54 @@ import { fileURLToPath } from 'node:url';
 import { AppDataSource } from '../database/data-source.js';
 
 const SRC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const readDirectory = async (name) => Promise.all(
-  (await readdir(path.join(SRC_ROOT, name)))
-    .filter((fileName) => fileName.endsWith('.js'))
-    .map((fileName) => readFile(path.join(SRC_ROOT, name, fileName), 'utf8')),
-);
 
-test('AFB-408 mantiene rutas y server libres de lógica SQL', async () => {
-  const sources = [
-    ...(await readDirectory('routes')),
-    ...(await readDirectory('controllers')),
-    await readFile(path.join(SRC_ROOT, 'server.js'), 'utf8'),
-  ];
-  for (const source of sources) {
-    assert.doesNotMatch(source, /\b(SELECT|INSERT INTO|UPDATE\s+alfi|DELETE FROM)\b/i);
-    assert.doesNotMatch(source, /\.query\s*\(/);
+const readProductionSources = async (directory = SRC_ROOT) => {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const sources = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === '__test__') continue;
+      sources.push(...await readProductionSources(fullPath));
+      continue;
+    }
+    if (entry.isFile() && entry.name.endsWith('.js')) {
+      sources.push({
+        filePath: fullPath,
+        source: await readFile(fullPath, 'utf8'),
+      });
+    }
+  }
+
+  return sources;
+};
+
+const sqlWords = (...words) => words.join('\\s+');
+const RAW_SQL_PATTERNS = [
+  /\.query\s*\(/,
+  new RegExp(`\\b${sqlWords('INSERT', 'INTO')}\\b`, 'i'),
+  new RegExp(`\\b${sqlWords('DELETE', 'FROM')}\\b`, 'i'),
+  new RegExp(`\\bUPDATE\\s+(?:[a-z_][\\w]*\\.)?[a-z_][\\w]*\\s+SET\\b`, 'i'),
+  new RegExp(`\\bSELECT\\b[\\s\\S]{0,300}\\bFROM\\b`, 'i'),
+];
+
+test('AFB-408 mantiene backend/src libre de SQL crudo operativo fuera de tests', async () => {
+  const sources = await readProductionSources();
+
+  for (const { filePath, source } of sources) {
+    for (const pattern of RAW_SQL_PATTERNS) {
+      assert.doesNotMatch(
+        source,
+        pattern,
+        `SQL crudo detectado en ${path.relative(SRC_ROOT, filePath)}`,
+      );
+    }
+    assert.doesNotMatch(
+      source,
+      /from\s+['"]pg['"]/,
+      `Import directo de pg detectado en ${path.relative(SRC_ROOT, filePath)}`,
+    );
   }
 });
 

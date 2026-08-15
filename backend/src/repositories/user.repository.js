@@ -1,4 +1,4 @@
-import { In } from 'typeorm';
+import { ILike, In } from 'typeorm';
 import { getDataSource } from '../database/data-source.js';
 
 const withRole = (repository) => repository
@@ -9,7 +9,7 @@ export const findUserByEmailRecord = async (email) => {
   const dataSource = await getDataSource();
   return withRole(dataSource.getRepository('User'))
     .addSelect('user.passwordHash')
-    .where('LOWER(user.email) = LOWER(:email)', { email })
+    .where({ email: ILike(String(email || '').trim()) })
     .getOne();
 };
 
@@ -56,24 +56,29 @@ export const createUserRecord = async (payload) => {
   });
 };
 
+const buildUserWhere = ({ search, role, active }) => {
+  const shared = {};
+  if (role) shared.role = { name: role };
+  if (active !== null) shared.active = active;
+
+  const normalizedSearch = String(search || '').trim();
+  if (!normalizedSearch) return shared;
+
+  const pattern = `%${normalizedSearch}%`;
+  return [
+    { ...shared, name: ILike(pattern) },
+    { ...shared, email: ILike(pattern) },
+    { ...shared, phone: ILike(pattern) },
+  ];
+};
+
 export const findUserRecords = async ({ search = '', role = '', active = null } = {}) => {
   const dataSource = await getDataSource();
-  const query = withRole(dataSource.getRepository('User'));
-
-  if (search) {
-    query.andWhere(
-      '(user.name ILIKE :search OR user.email ILIKE :search OR COALESCE(user.phone, \'\') ILIKE :search)',
-      { search: `%${search}%` },
-    );
-  }
-  if (role) query.andWhere('role.name = :role', { role });
-  if (active !== null) query.andWhere('user.active = :active', { active });
-
-  return query
-    .orderBy('user.active', 'DESC')
-    .addOrderBy('LOWER(user.name)', 'ASC')
-    .addOrderBy('user.id', 'ASC')
-    .getMany();
+  return dataSource.getRepository('User').find({
+    where: buildUserWhere({ search, role, active }),
+    relations: { role: true },
+    order: { active: 'DESC', name: 'ASC', id: 'ASC' },
+  });
 };
 
 export const updateUserRecord = async ({ id, role, active }) => {

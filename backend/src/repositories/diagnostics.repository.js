@@ -3,11 +3,11 @@ import { findAllAnalysisRecords } from './analysis.repository.js';
 
 export const getDatabaseStatus = async () => {
   const dataSource = await getDataSource();
-  const rows = await dataSource.query(`
-    SELECT CURRENT_DATABASE() AS database, CURRENT_USER AS usuario,
-      CURRENT_TIMESTAMP AS fecha
-  `);
-  return rows[0];
+  return {
+    database: dataSource.options.database,
+    usuario: dataSource.options.username,
+    fecha: new Date(),
+  };
 };
 
 export const getAnalysisDiagnostics = async () => (
