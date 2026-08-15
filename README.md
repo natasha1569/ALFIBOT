@@ -202,7 +202,5 @@ El contenido final debe revisarse antes de enviarlo. ALFI BOT ofrece orientació
 - [Matriz de pruebas funcionales](docs/testing/matriz-pruebas.md).
 - [Evidencia de AFB-268 y AFB-271](docs/testing/AFB-268-271-evidencia-pruebas.md).
 - [Trazabilidad de ramas, commits y PR](docs/evidence/AFB-293-trazabilidad-git.md).
-- [Preguntas técnicas frecuentes](docs/presentation/AFB-282-preguntas-tecnicas.md).
-- [Guion de sustentación](docs/presentation/AFB-277-guion-sustentacion.md).
 - [Reportería BI](docs/database/AFB-253-reporteria-bi.md).
 - [Plan de seguridad](docs/security/AFB-372-plan-politicas-seguridad-bd.md).
