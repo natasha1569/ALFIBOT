@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   listAuditEvents,
   normalizeAuditQuery,
-} from '../audit.service.js';
+} from '../../services/audit.service.js';
 
 test('normalizeAuditQuery accepts safe filters and pagination', () => {
   assert.deepEqual(

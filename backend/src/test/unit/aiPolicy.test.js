@@ -6,7 +6,7 @@ import {
   normalizeFraudCategory,
   outputFormatDescription,
   systemPrompt,
-} from '../aiPolicy.js';
+} from '../../config/aiPolicy.js';
 import { normalizeResult } from '../../services/openai.service.js';
 
 const EXPECTED_CATEGORIES = [

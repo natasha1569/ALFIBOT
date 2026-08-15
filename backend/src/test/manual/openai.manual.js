@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { analyzeWithAI } from './src/services/openai.service.js';
+import { analyzeWithAI } from '../../services/openai.service.js';
 
 console.log('Modelo principal:', process.env.OPENAI_MODEL || 'gpt-5-mini');
 console.log('Modelo fallback:', process.env.OPENAI_FALLBACK_MODEL || 'sin fallback');

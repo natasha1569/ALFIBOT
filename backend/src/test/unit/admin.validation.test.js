@@ -8,7 +8,7 @@ import {
 import {
   normalizeUserFilters,
   normalizeUserUpdate,
-} from '../admin.validation.js';
+} from '../../services/admin.validation.js';
 
 test('AFB-333 restringe administración de usuarios al administrador', () => {
   assert.equal(

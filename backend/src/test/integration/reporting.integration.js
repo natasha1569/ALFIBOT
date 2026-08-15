@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { readFile } from 'node:fs/promises';
-import { getDataSource } from './src/database/data-source.js';
-import { findFraudTrendRows } from './src/repositories/reporting.repository.js';
+import { getDataSource } from '../../database/data-source.js';
+import { findFraudTrendRows } from '../../repositories/reporting.repository.js';
 
 const EXPECTED_CATEGORIES = [
   'credito_falso',
@@ -55,7 +55,7 @@ const run = async () => {
     );
 
     const canonicalSql = await readFile(
-      new URL('./sql/ALFI_BOT_DATABASE.sql', import.meta.url),
+      new URL('../../../sql/ALFI_BOT_DATABASE.sql', import.meta.url),
       'utf8',
     );
     for (const viewName of REPORTING_VIEWS) {

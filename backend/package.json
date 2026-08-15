@@ -7,13 +7,14 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "node --test src/**/__test__/*.test.js src/__test__/*.test.js",
-    "check:conventions": "node --test src/__test__/conventions.test.js",
-    "test:image": "node --test src/services/__test__/imageAnalysis.service.test.js",
-    "test:openai": "node test-openai.js",
-    "test:auth": "node test-auth.js",
-    "test:admin": "node test-admin-users.js",
-    "test:reporting": "node test-reporting.js"
+    "test": "node --test src/test/unit/*.test.js",
+    "check:conventions": "node --test src/test/unit/conventions.test.js",
+    "test:image": "node --test src/test/unit/imageAnalysis.service.test.js",
+    "test:openai": "node src/test/manual/openai.manual.js",
+    "test:auth": "node src/test/integration/auth.integration.js",
+    "test:admin": "node src/test/integration/admin-users.integration.js",
+    "test:reporting": "node src/test/integration/reporting.integration.js",
+    "test:rbac": "node --test src/test/unit/rbac.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

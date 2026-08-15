@@ -1,10 +1,10 @@
 import 'dotenv/config';
-import { getDataSource } from './src/database/data-source.js';
-import { hashSecurePassword } from './src/services/password.service.js';
+import { getDataSource } from '../../database/data-source.js';
+import { hashSecurePassword } from '../../services/password.service.js';
 import {
   listUsers,
   updateUserAdministration,
-} from './src/services/user.service.js';
+} from '../../services/user.service.js';
 
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);
