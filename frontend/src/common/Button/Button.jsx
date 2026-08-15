@@ -1,21 +1,20 @@
 const Button = ({
-  type,
-  className,
-  onClick,
   children,
-  isLoading,
-  isLoadingMessage,
-}) => {
-  return (
-    <button
-      type={type}
-      className={className}
-      onClick={onClick}
-      disabled={isLoading}
-    >
-      {isLoading ? isLoadingMessage : children}
-    </button>
-  );
-};
+  variant = 'primary',
+  className = '',
+  loading = false,
+  disabled = false,
+  type = 'button',
+  ...props
+}) => (
+  <button
+    className={`btn btn-${variant} ${className}`.trim()}
+    disabled={disabled || loading}
+    type={type}
+    {...props}
+  >
+    {loading ? 'Procesando…' : children}
+  </button>
+);
 
 export default Button;

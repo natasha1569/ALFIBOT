@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import FraudTrendsDashboard from '../components/FraudTrendsDashboard.jsx';
-import AdminManagement from '../components/AdminManagement.jsx';
-import AuditTrailPanel from '../components/AuditTrailPanel.jsx';
+import FraudTrendsDashboard from '../components/FraudTrendsDashboard/FraudTrendsDashboard.jsx';
+import AdminManagement from '../components/AdminManagement/AdminManagement.jsx';
+import AuditTrailPanel from '../components/AuditTrailPanel/AuditTrailPanel.jsx';
+import { Button } from '../common/index.js';
 
 const PORTAL_CONFIG = {
   administrador: {
@@ -59,13 +60,9 @@ const RolePortal = ({
             <i className="bi bi-person-circle me-2"></i>
             {user.name}
           </span>
-          <button
-            className="btn btn-outline-secondary"
-            type="button"
-            onClick={onLogout}
-          >
+          <Button variant="outline-secondary" onClick={onLogout}>
             Cerrar sesión
-          </button>
+          </Button>
         </div>
       </div>
 

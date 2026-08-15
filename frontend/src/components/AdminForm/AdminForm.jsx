@@ -1,3 +1,5 @@
+import { Button, FormField, SelectField } from '../../common/index.js';
+
 const AdminForm = ({
   fields,
   values,
@@ -26,28 +28,20 @@ const AdminForm = ({
               </label>
             ) : (
               <>
-                <label className="form-label" htmlFor={`admin-form-${field.name}`}>
-                  {field.label}
-                </label>
                 {field.type === 'select' ? (
-                  <select
-                    className="form-select"
+                  <SelectField
+                    label={field.label}
                     id={`admin-form-${field.name}`}
                     name={field.name}
                     onChange={onChange}
                     value={values[field.name] ?? ''}
                     disabled={disabled || field.disabled}
                     required={field.required}
-                  >
-                    {field.options.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={field.options}
+                  />
                 ) : (
-                  <input
-                    className="form-control"
+                  <FormField
+                    label={field.label}
                     id={`admin-form-${field.name}`}
                     min={field.min}
                     name={field.name}
@@ -65,17 +59,14 @@ const AdminForm = ({
       </div>
 
       <div className="d-flex justify-content-end gap-2 mt-4">
-        <button
-          className="btn btn-outline-secondary"
+        <Button
+          variant="outline-secondary"
           onClick={onCancel}
-          type="button"
-          disabled={disabled || field.disabled}
+          disabled={disabled}
         >
           Cancelar
-        </button>
-        <button className="btn btn-primary" type="submit" disabled={disabled}>
-          {disabled ? 'Guardando…' : submitLabel}
-        </button>
+        </Button>
+        <Button type="submit" loading={disabled}>{submitLabel}</Button>
       </div>
     </form>
   );

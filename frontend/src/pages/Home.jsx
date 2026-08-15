@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import AlfiAssistant from "../components/AlfiAssistant.jsx";
-import AnalysisForm from "../components/AnalysisForm.jsx";
-import HistoryList from "../components/HistoryList.jsx";
-import ResultCard from "../components/ResultCard.jsx";
-import ShareModal from "../components/ShareModal.jsx";
+import AlfiAssistant from "../components/AlfiAssistant/AlfiAssistant.jsx";
+import AnalysisForm from "../components/AnalysisForm/AnalysisForm.jsx";
+import HistoryList from "../components/HistoryList/HistoryList.jsx";
+import ResultCard from "../components/ResultCard/ResultCard.jsx";
+import ShareModal from "../components/ShareModal/ShareModal.jsx";
 import {
   analyzeContent,
   clearHistory,

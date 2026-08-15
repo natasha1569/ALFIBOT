@@ -4,6 +4,7 @@ import {
   loginAdmin,
   loginAuditor,
 } from '../services/api.js';
+import { AlertMessage, Button, FormField } from '../common/index.js';
 
 const PORTALS = {
   administrador: {
@@ -77,47 +78,30 @@ const RoleLoginPage = ({
         <p className="alfi-login-copy">{portal.copy}</p>
 
         <form onSubmit={handleSubmit} className="alfi-login-form">
-          <label htmlFor={`${role}-email`}>Correo electrónico</label>
-          <div className="alfi-login-input">
-            <i className="bi bi-envelope"></i>
-            <input
-              id={`${role}-email`}
-              type="email"
-              value={credentials.email}
-              onChange={(event) => setCredentials((current) => ({
-                ...current,
-                email: event.target.value,
-              }))}
-              autoComplete="username"
-              required
-            />
-          </div>
-
-          <label htmlFor={`${role}-password`}>Contraseña</label>
-          <div className="alfi-login-input">
-            <i className="bi bi-lock"></i>
-            <input
-              id={`${role}-password`}
-              type="password"
-              value={credentials.password}
-              onChange={(event) => setCredentials((current) => ({
-                ...current,
-                password: event.target.value,
-              }))}
-              autoComplete="current-password"
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="alert alert-danger py-2" role="alert">
-              {error}
-            </div>
-          )}
-
-          <button className="btn btn-alfi btn-lg w-100" disabled={isLoading}>
-            {isLoading ? 'Verificando...' : 'Ingresar al portal'}
-          </button>
+          <FormField
+            id={`${role}-email`}
+            label="Correo electrónico"
+            icon="bi-envelope"
+            type="email"
+            value={credentials.email}
+            onChange={(event) => setCredentials((current) => ({ ...current, email: event.target.value }))}
+            autoComplete="username"
+            required
+          />
+          <FormField
+            id={`${role}-password`}
+            label="Contraseña"
+            icon="bi-lock"
+            type="password"
+            value={credentials.password}
+            onChange={(event) => setCredentials((current) => ({ ...current, password: event.target.value }))}
+            autoComplete="current-password"
+            required
+          />
+          <AlertMessage className="py-2">{error}</AlertMessage>
+          <Button className="btn-alfi btn-lg w-100" loading={isLoading} type="submit">
+            Ingresar al portal
+          </Button>
         </form>
       </section>
     </main>
